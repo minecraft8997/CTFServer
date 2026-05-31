@@ -111,10 +111,17 @@ public class ActionSender {
   /** Sends the level init packet. */
   public void sendLevelInit(int size) {
     session.setAuthenticated();
-    PacketBuilder bldr =
-        new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(2));
-    bldr.putInt("size", size);
-    session.send(bldr.toPacket());
+    if (session.isExtensionSupported("FastMap")) {
+      PacketBuilder bldr =
+          new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingAltPacket(2));
+      bldr.putInt("size", size);
+      session.send(bldr.toPacket());
+
+    } else {
+      PacketBuilder bldr =
+          new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(2));
+      session.send(bldr.toPacket());
+    }
   }
 
   /**
@@ -287,8 +294,29 @@ public class ActionSender {
         (byte) player.getRotation().getLook());
   }
 
+  public void sendSpawn(Player player) {
+    sendSpawn(
+        (byte) player.getId(),
+        player.nameId,
+        player.getColoredName(),
+        player.getTeamName(),
+        player.getName(),
+        player.getListName(),
+        player.getSkinUrl(),
+        player.getPosition().getX(),
+        player.getPosition().getY(),
+        player.getPosition().getZ(),
+        (byte) player.getRotation().getRotation(),
+        (byte) player.getRotation().getLook(),
+        false,
+        true);
+  }
+
   public void sendAddPlayerName(
       short id, String name, String listName, String groupName, byte groupRank) {
+    if (!session.isExtensionSupported("ExtPlayerList")) {
+      return;
+    }
     PacketBuilder bldr =
         new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(22));
     bldr.putShort("id", id);
@@ -448,6 +476,9 @@ public class ActionSender {
   }
 
   public void sendHackControl(boolean enableHacks) {
+    if (!session.isExtensionSupported("HackControl")) {
+      return;
+    }
     PacketBuilder bldr =
         new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(32));
     bldr.putByte("flying", enableHacks ? (byte) 1 : (byte) 0);
@@ -540,6 +571,9 @@ public class ActionSender {
   }
 
   public void sendDefineBlockExt(CustomBlockDefinition block) {
+    if (!session.isExtensionSupported("BlockDefinitionsExt")) {
+      return;
+    }
     if (block.blockDraw == Constants.BLOCK_DRAW_SPRITE) {
       sendDefineBlock(
           block.id,
@@ -681,6 +715,9 @@ public class ActionSender {
   }
 
   public void sendBlockPermissions(int id, boolean place, boolean delete) {
+    if (!session.isExtensionSupported("BlockPermissions")) {
+      return;
+    }
     PacketBuilder bldr =
         new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(28));
     bldr.putShort("id", id);
@@ -697,6 +734,9 @@ public class ActionSender {
   }
 
   public void sendInventoryOrder(int id, int order) {
+    if (!session.isExtensionSupported("InventoryOrder")) {
+      return;
+    }
     PacketBuilder bldr =
         new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(44));
     bldr.putShort("id", id);
@@ -749,13 +789,24 @@ public class ActionSender {
    * @param type BlockDefinition type.
    */
   public void sendBlock(int x, int y, int z, short type) {
-    PacketBuilder bldr =
-        new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(6));
-    bldr.putShort("x", x);
-    bldr.putShort("y", y);
-    bldr.putShort("z", z);
-    bldr.putShort("type", type);
-    session.send(bldr.toPacket());
+    if (session.isExtensionSupported("ExtendedBlocks")) {
+      PacketBuilder bldr =
+          new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingAltPacket(6));
+      bldr.putShort("x", x);
+      bldr.putShort("y", y);
+      bldr.putShort("z", z);
+      bldr.putShort("type", type);
+      session.send(bldr.toPacket());
+
+    } else {
+      PacketBuilder bldr =
+          new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(6));
+      bldr.putShort("x", x);
+      bldr.putShort("y", y);
+      bldr.putShort("z", z);
+      bldr.putByte("type", type);
+      session.send(bldr.toPacket());
+    }
   }
 
   public void sendDefineEffect(
@@ -778,6 +829,9 @@ public class ActionSender {
       int lifetimeVariation,
       int collide,
       int fullBright) {
+    if (!session.isExtensionSupported("CustomParticles")) {
+      return;
+    }
     PacketBuilder bldr =
         new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(48));
     bldr.putByte("id", id);
@@ -835,8 +889,12 @@ public class ActionSender {
           short green,
           short blue,
           short opacity) {
+    if (!session.isExtensionSupported("SelectionCuboid")) {
+      return;
+    }
+
     PacketBuilder bldr =
-            new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(26));
+        new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(26));
     bldr.putByte("id", id);
     bldr.putString("label", label);
     bldr.putShort("start_x", startX);
@@ -861,6 +919,9 @@ public class ActionSender {
   }
 
   public void sendHotbar(int id, int index) {
+    if (!session.isExtensionSupported("SetHotbar")) {
+      return;
+    }
     PacketBuilder bldr =
         new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(45));
     bldr.putShort("id", id);

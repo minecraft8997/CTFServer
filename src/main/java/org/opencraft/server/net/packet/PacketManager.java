@@ -49,14 +49,22 @@ public class PacketManager {
   /** Incoming packets. */
   private List<PacketDefinition> incoming = new LinkedList<PacketDefinition>();
 
+  private List<PacketDefinition> incomingAlt = new LinkedList<PacketDefinition>();
+
   /** Outgoing packets. */
   private List<PacketDefinition> outgoing = new LinkedList<PacketDefinition>();
+
+  private List<PacketDefinition> outgoingAlt = new LinkedList<PacketDefinition>();
 
   /** The incoming packet array (faster access by opcode than list iteration). */
   private transient PacketDefinition[] incomingArray;
 
+  private transient PacketDefinition[] incomingAltArray;
+
   /** The outgoing packet array (faster access by opcode than list iteration). */
   private transient PacketDefinition[] outgoingArray;
+
+  private transient PacketDefinition[] outgoingAltArray;
 
   /**
    * Resolves the packet manager after deserialization.
@@ -68,9 +76,17 @@ public class PacketManager {
     for (PacketDefinition def : incoming) {
       incomingArray[def.getOpcode()] = def;
     }
+    incomingAltArray = new PacketDefinition[256];
+    for (PacketDefinition def : incomingAlt) {
+      incomingAltArray[def.getOpcode()] = def;
+    }
     outgoingArray = new PacketDefinition[256];
     for (PacketDefinition def : outgoing) {
       outgoingArray[def.getOpcode()] = def;
+    }
+    outgoingAltArray = new PacketDefinition[256];
+    for (PacketDefinition def : outgoingAlt) {
+      outgoingAltArray[def.getOpcode()] = def;
     }
     return this;
   }
@@ -85,6 +101,10 @@ public class PacketManager {
     return incomingArray[opcode];
   }
 
+  public PacketDefinition getIncomingAltPacket(int opcode) {
+    return incomingAltArray[opcode];
+  }
+
   /**
    * Gets an outgoing packet definition.
    *
@@ -93,5 +113,9 @@ public class PacketManager {
    */
   public PacketDefinition getOutgoingPacket(int opcode) {
     return outgoingArray[opcode];
+  }
+
+  public PacketDefinition getOutgoingAltPacket(int opcode) {
+    return outgoingAltArray[opcode];
   }
 }

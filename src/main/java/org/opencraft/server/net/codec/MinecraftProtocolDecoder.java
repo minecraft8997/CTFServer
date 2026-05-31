@@ -40,6 +40,7 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.opencraft.server.net.MinecraftSession;
 import org.opencraft.server.net.packet.Packet;
 import org.opencraft.server.net.packet.PacketDefinition;
 import org.opencraft.server.net.packet.PacketField;
@@ -72,7 +73,16 @@ public final class MinecraftProtocolDecoder extends CumulativeProtocolDecoder {
     if (currentPacket == null) {
       if (buffer.remaining() >= 1) {
         int opcode = buffer.getUnsigned();
-        currentPacket = manager.getIncomingPacket(opcode);
+        switch (opcode) {
+          case 5:
+          case 7:
+            if (((MinecraftSession)session).isExtensionSupported("ExtendedBlocks")) {
+              currentPacket = manager.getIncomingAltPacket(opcode);
+            }
+            break;
+          default:
+            currentPacket = manager.getIncomingPacket(opcode);
+        }
         if (currentPacket == null) {
           throw new IOException("Unknown incoming packet type (opcode = " + opcode + ").");
         }
