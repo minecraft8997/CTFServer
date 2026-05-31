@@ -571,7 +571,7 @@ public class ActionSender {
   }
 
   public void sendDefineBlockExt(CustomBlockDefinition block) {
-    if (!session.isExtensionSupported("BlockDefinitionsExt")) {
+    if (!session.isExtensionSupported("BlockDefinitionsExt", 2)) {
       return;
     }
     if (block.blockDraw == Constants.BLOCK_DRAW_SPRITE) {
