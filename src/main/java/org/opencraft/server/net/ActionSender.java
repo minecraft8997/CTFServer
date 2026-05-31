@@ -314,7 +314,7 @@ public class ActionSender {
 
   public void sendAddPlayerName(
       short id, String name, String listName, String groupName, byte groupRank) {
-    if (!session.isExtensionSupported("ExtPlayerList")) {
+    if (!session.isExtensionSupported("ExtPlayerList", 2)) {
       return;
     }
     PacketBuilder bldr =

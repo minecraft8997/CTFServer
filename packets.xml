@@ -1375,10 +1375,6 @@ POSSIBILITY OF SUCH DAMAGE.
                     <type>SHORT</type>
                 </field>
                 <field>
-                    <name>mode</name>
-                    <type>BYTE</type>
-                </field>
-                <field>
                     <name>type</name>
                     <type>SHORT</type>
                 </field>

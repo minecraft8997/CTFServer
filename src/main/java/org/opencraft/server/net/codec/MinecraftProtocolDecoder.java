@@ -70,14 +70,18 @@ public final class MinecraftProtocolDecoder extends CumulativeProtocolDecoder {
   @Override
   protected boolean doDecode(IoSession session, IoBuffer buffer, ProtocolDecoderOutput out)
       throws Exception {
+    MinecraftSession minecraftSession = ((MinecraftSession) session.getAttribute("attachment"));
     if (currentPacket == null) {
       if (buffer.remaining() >= 1) {
         int opcode = buffer.getUnsigned();
         switch (opcode) {
           case 5:
           case 7:
-            if (((MinecraftSession)session).isExtensionSupported("ExtendedBlocks")) {
+          case 8:
+            if (minecraftSession.isExtensionSupported("ExtendedBlocks")) {
               currentPacket = manager.getIncomingAltPacket(opcode);
+            } else {
+              currentPacket = manager.getIncomingPacket(opcode);
             }
             break;
           default:
