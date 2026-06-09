@@ -38,7 +38,6 @@ package org.opencraft.server.model;
 
 import org.opencraft.server.cmd.impl.ActivateItemCommand;
 import org.opencraft.server.cmd.impl.CreeperCommand;
-import org.opencraft.server.cmd.impl.FuelCommand;
 import org.opencraft.server.cmd.impl.GrenadeCommand;
 import org.opencraft.server.cmd.impl.RocketCommand;
 import org.opencraft.server.cmd.impl.SmokeGrenadeCommand;
@@ -126,14 +125,6 @@ public class Store {
       long rocketCooldown = (System.currentTimeMillis() - p.rocketTime);
       if (rocketCooldown < rocketRecharge * 1000) {
         p.getActionSender().sendChatMessage("- &ePlease wait " + (rocketRecharge - rocketCooldown / 1000) + "" + " seconds");
-        return false;
-      }
-    }
-
-    if (itemname == "FlameThrowerFuel") {
-      long smokeGrenadeCooldown = (System.currentTimeMillis() - p.smokeGrenadeTime);
-      if (smokeGrenadeCooldown < smokeGrenadeRecharge * 1000) {
-        p.getActionSender().sendChatMessage("- &ePlease wait " + (smokeGrenadeRecharge - smokeGrenadeCooldown / 1000) + "" + " seconds");
         return false;
       }
     }
