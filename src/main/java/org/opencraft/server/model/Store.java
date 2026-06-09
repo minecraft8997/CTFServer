@@ -40,7 +40,6 @@ import org.opencraft.server.cmd.impl.ActivateItemCommand;
 import org.opencraft.server.cmd.impl.CreeperCommand;
 import org.opencraft.server.cmd.impl.FuelCommand;
 import org.opencraft.server.cmd.impl.GrenadeCommand;
-import org.opencraft.server.cmd.impl.LineCommand;
 import org.opencraft.server.cmd.impl.RocketCommand;
 import org.opencraft.server.cmd.impl.SmokeGrenadeCommand;
 import org.opencraft.server.game.impl.GameSettings;
@@ -55,14 +54,11 @@ public class Store {
   public static int bigTNTPrice = GameSettings.getInt("BigTNTPrice");
   public static int rocketPrice = GameSettings.getInt("RocketPrice");
   public static int grenadePrice = GameSettings.getInt("GrenadePrice");
-  public static int linePrice = GameSettings.getInt("LinePrice");
   public static int creeperPrice = GameSettings.getInt("CreeperPrice");
   public static int smokeGrenadePrice = GameSettings.getInt("SmokeGrenadePrice");
-  public static int flamethrowerFuelPrice = GameSettings.getInt("FlameThrowerFuelPrice");
 
   private static final int creeperRecharge = 7;
   private static final int grenadeRecharge = 7;
-  private static final int lineRecharge = 7;
   private static final int rocketRecharge = 10;
   private static final int smokeGrenadeRecharge = 10;
 
@@ -77,8 +73,6 @@ public class Store {
         new SimpleItem("Grenade", grenadePrice, "Throwable TNT", GrenadeCommand.getCommand()),
         "gr");
     addItem(
-        "Line", new SimpleItem("Line", linePrice, "Builds a bridge", LineCommand.getCommand()), "line");
-    addItem(
         "Creeper",
         new SimpleItem("Creeper", creeperPrice, "Makes you explode", CreeperCommand.getCommand()),
         "cr");
@@ -86,10 +80,6 @@ public class Store {
         "SmokeGrenade",
         new SimpleItem("SmokeGrenade", smokeGrenadePrice, "Fogs an area temporarily", SmokeGrenadeCommand.getCommand()),
         "sg");
-    addItem(
-        "FlameThrowerFuel",
-        new SimpleItem("FlameThrowerFuel", flamethrowerFuelPrice, "Buys fuel to power the flamethrower", FuelCommand.getCommand()),
-        "ff");
   }
 
   public boolean buy(Player p, String itemname) {
@@ -132,14 +122,6 @@ public class Store {
       }
     }
 
-    if (itemname == "Line") {
-      long lineCooldown = (System.currentTimeMillis() - p.lineTime);
-      if (lineCooldown < lineRecharge * 1000) {
-        p.getActionSender().sendChatMessage("- &ePlease wait " + (lineRecharge - lineCooldown / 1000) + "" + " seconds");
-        return false;
-      }
-    }
-
     if (itemname == "Rocket") {
       long rocketCooldown = (System.currentTimeMillis() - p.rocketTime);
       if (rocketCooldown < rocketRecharge * 1000) {
@@ -167,6 +149,7 @@ public class Store {
 
   public void addItem(String name, StoreItem item, String command) {
     items.put(name, item);
+    if (command == null) return;
     item.command = command;
     World.getWorld().getGameMode().registerCommand(command, new ActivateItemCommand(item));
   }
@@ -184,18 +167,12 @@ public class Store {
     } else if (name == "Grenade") {
       item = new SimpleItem("Grenade", price, "Throwable TNT", GrenadeCommand.getCommand());
       command = "gr";
-    } else if (name == "Line") {
-      item = new SimpleItem("Line", price, "Builds a bridge", LineCommand.getCommand());
-      command = "line";
     } else if (name == "Creeper") {
       item = new SimpleItem("Creeper", price, "Makes you explode", CreeperCommand.getCommand());
       command = "cr";
     } else if (name == "SmokeGrenade") {
       item = new SimpleItem("SmokeGrenade", price, "Fogs an area temporarily", SmokeGrenadeCommand.getCommand());
       command = "sg";
-    } else if (name == "FlameThrowerFuel") {
-      item = new SimpleItem("FlameThrowerFuel", price, "Buys fuel to power the flamethrower", FuelCommand.getCommand());
-      command = "ff";
     }
 
     items.put(name, item);

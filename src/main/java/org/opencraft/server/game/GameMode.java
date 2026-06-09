@@ -133,6 +133,7 @@ public abstract class GameMode {
     registerCommand("lava", LavaCommand.getCommand());
     registerCommand("lb", LeaderBoardCommand.getCommand());
     registerCommand("lbstats", LeaderboardStatsCommand.getCommand());
+    registerCommand("line", LineCommand.getCommand());
     registerCommand("log", LogCommand.getCommand());
     registerCommand("mapenvironment", MapEnvironmentCommand.getCommand());
     registerCommand("maps", MapListCommand.getCommand());

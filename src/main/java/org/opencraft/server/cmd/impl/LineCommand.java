@@ -39,6 +39,7 @@ package org.opencraft.server.cmd.impl;
 import org.opencraft.server.Server;
 import org.opencraft.server.cmd.Command;
 import org.opencraft.server.cmd.CommandParameters;
+import org.opencraft.server.game.impl.GameSettings;
 import org.opencraft.server.model.BlockConstants;
 import org.opencraft.server.model.Player;
 import org.opencraft.server.model.Position;
@@ -61,6 +62,39 @@ public class LineCommand implements Command {
     Position pos = player.getPosition().toBlockPos();
     Rotation r = player.getRotation();
 
+    int requested = 25;
+    if (params.getArgumentCount() > 0) {
+      try {
+        requested = params.getIntegerArgument(0);
+      } catch (NumberFormatException ex) {
+        player.sendMessage("Usage: /line [length]");
+        return;
+      }
+    }
+
+    long lineCooldown = (System.currentTimeMillis() - player.lineTime);
+    if (lineCooldown < 7 * 1000) {
+      player.getActionSender().sendChatMessage("- &ePlease wait " + (7 - lineCooldown / 1000) + "" + " seconds");
+      return;
+    }
+
+    requested = Math.max(1, Math.min(requested, 128));
+    int maxBlocks = requested * 4; // This is actually 1:2 but the line tick has very calculations
+
+    if (!GameSettings.getBoolean("Chaos")) {
+      if (player.getPoints() < requested) {
+        player.getActionSender().sendChatMessage(
+            "- &eYou need " + requested + " points!");
+        return;
+      }
+
+      player.subtractPoints(requested);
+      player.pointsSpent += requested;
+
+      player.getActionSender().sendChatMessage(
+          "- &eYou have " + player.getPoints() + " points left");
+    }
+
     player.lineTime = System.currentTimeMillis();
     player.linesUsed++;
 
@@ -79,7 +113,7 @@ public class LineCommand implements Command {
     double x = px;
     double y = py;
     double z = pz;
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < maxBlocks; i++) {
       int bx = (int) Math.round(x);
       int by = (int) Math.round(y);
       int bz = (int) Math.round(z);

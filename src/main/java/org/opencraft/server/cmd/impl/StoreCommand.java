@@ -57,7 +57,7 @@ public class StoreCommand implements Command {
   public void execute(Player player, CommandParameters params) {
     player
         .getActionSender()
-        .sendChatMessage("- &aYou have " + player.getPoints() + " points" + ".");
+        .sendChatMessage("- &eYou have &b" + player.getPoints() + " &epoints" + ".");
     Object[] items = Server.getStore().getItems();
     int i = 1;
     for (Object obj : items) {
@@ -67,6 +67,8 @@ public class StoreCommand implements Command {
       player.getActionSender().sendChatMessage(msg);
       i++;
     }
-    player.getActionSender().sendChatMessage("- &aSay a command to buy something!");
+    player.getActionSender().sendChatMessage("- &a" + (i + 1) + ". Line - Builds a bridge - /line");
+    player.getActionSender().sendChatMessage("  &2(Default line price is 25. Use /line [number] to specify length)");
+    player.getActionSender().sendChatMessage("- &eSay a command to buy something!");
   }
 }
