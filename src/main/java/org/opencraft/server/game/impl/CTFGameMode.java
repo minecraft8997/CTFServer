@@ -957,6 +957,9 @@ public class CTFGameMode extends GameMode {
 
   public void dropFlag(Player p, final boolean instant, final boolean isVoluntary) {
     if (p.hasFlag) {
+      if (!isVoluntary) {
+        p.flagsLost++;
+      }
       p.hasFlag = false;
       unblockSpawnZones(p);
       World.getWorld().broadcast("- " + p.parseName() + " dropped the flag!");

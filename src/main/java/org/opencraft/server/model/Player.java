@@ -145,6 +145,7 @@ public class Player extends Entity implements IPlayer {
   public int rocketDeaths = 0;
   public int rocketsShot = 0;
   public int flagsTaken = 0;
+  public int flagsLost = 0;
   public int linesUsed = 0;
   public int pointsSpent = 0;
   public int captures = 0;

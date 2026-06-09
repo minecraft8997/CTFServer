@@ -385,6 +385,7 @@ public abstract class GameMode {
     player.rocketDeaths = 0;
     player.rocketsShot = 0;
     player.flagsTaken = 0;
+    player.flagsLost = 0;
     player.linesUsed = 0;
     player.pointsSpent = 0;
     player.captures = 0;
