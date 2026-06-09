@@ -39,6 +39,7 @@ public class GameSettings {
     add("AntiStalemate", TYPE_BOOLEAN, true);
     add("AntiStalemateTime", TYPE_INT, 90);
     add("StalemateTags", TYPE_BOOLEAN, false);
+    add("FlagCarrierKillReward", TYPE_INT, 10);
     add("InitialPoints", TYPE_INT, Constants.INITIAL_PLAYER_POINTS);
     add("Whitelist", TYPE_BOOLEAN, false);
     add("WhitelistMessage", TYPE_STRING, "There is a tournament going on, try again later!");

@@ -227,6 +227,9 @@ public class CTFGameMode extends GameMode {
             p.addPoints(5);
           }
           if (t.hasFlag) {
+            if (redFlagTaken && blueFlagTaken) {
+              p.addPoints(GameSettings.getInt("FlagCarrierKillReward"));
+            }
             dropFlag(t.team);
 
             // Follow the player who killed flag carriers in auto mode, if they are still alive
@@ -1319,6 +1322,10 @@ public class CTFGameMode extends GameMode {
           dropFlag(tagged.team);
         }
         if (tagged.hasFlag) {
+          if (redFlagTaken && blueFlagTaken) {
+            tagger.addPoints(GameSettings.getInt("FlagCarrierKillReward"));
+          }
+
           dropFlag(tagged.team);
         }
         tagged.died(tagger);
@@ -1713,6 +1720,9 @@ public class CTFGameMode extends GameMode {
       }
       p.addPoints(5);
       if (t.hasFlag) {
+        if (redFlagTaken && blueFlagTaken) {
+          p.addPoints(GameSettings.getInt("FlagCarrierKillReward"));
+        }
         dropFlag(t.team);
       }
     }
