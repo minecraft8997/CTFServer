@@ -209,7 +209,7 @@ public class CTFGameMode extends GameMode {
             updateKillFeed(p, t, p.parseName() + " rocketed " + t.getColoredName() + " &f(" + distance + ")");
             p.rocketKills++;
             t.rocketDeaths++;
-          } if (type == "grenade") {
+          } else if (type == "grenade") {
             updateKillFeed(p, t, p.parseName() + " grenaded " + t.getColoredName());
             p.grenadeKills++;
             t.grenadeDeaths++;

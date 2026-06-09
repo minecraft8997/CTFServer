@@ -130,7 +130,7 @@ public class GrenadeCommand implements Command {
                           false,
                           false,
                           false,
-                          "Grenade");
+                          "grenade");
                   break;
                 } else {
                   World.getWorld()
