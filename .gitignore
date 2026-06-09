@@ -37,8 +37,11 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 /src/META-INF/MANIFEST.MF
 
+*.salive
+
 maps
 /texturepacks_cache
+/replays
 
 
 .gradle
