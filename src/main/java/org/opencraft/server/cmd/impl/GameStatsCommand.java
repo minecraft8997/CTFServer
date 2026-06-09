@@ -57,16 +57,16 @@ public class GameStatsCommand implements Command {
   public void execute(Player player, CommandParameters params) {
     //player.getActionSender().sendChatMessage("- &eDef kills: " + player.defenseKills + ", mid kills: " + player.midKills + ", atk kills: " + player.attackKills);
     player.getActionSender().sendChatMessage("- &eTotal kills: " + player.kills + " vs Total deaths: " + player.deaths + " (" + player.kills / player.deaths + ")");
-    player.getActionSender().sendChatMessage("- &eTNT kills: " + player.tntKills + " vs TNT deaths " + player.tntDeaths + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eTag kills: " + player.tagKills + " vs Tag deaths " + player.tagDeaths + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eMine kills: " + player.mineKills + " vs Mine deaths " + player.mineDeaths + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eGrenades thrown: " + player.grenadesThrown + " -> Grenades landed " + player.grenadeKills + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eGrenade deaths: " + player.grenadeDeaths + " vs Rocket deaths: " + player.rocketDeaths + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eRockets shot: " + player.rocketsShot + " -> Rockets landed: " + player.rocketKills + " (0.33)");
+    player.getActionSender().sendChatMessage("- &eTNT kills: " + player.tntKills + " vs TNT deaths " + player.tntDeaths + " (" + player.tntKills / player.tntDeaths + ")");
+    player.getActionSender().sendChatMessage("- &eTag kills: " + player.tagKills + " vs Tag deaths " + player.tagDeaths + " (" + player.tagKills / player.tagDeaths + ")");
+    player.getActionSender().sendChatMessage("- &eMine kills: " + player.mineKills + " vs Mine deaths " + player.mineDeaths + " (" + player.mineKills / player.mineDeaths + ")");
+    player.getActionSender().sendChatMessage("- &eGrenades thrown: " + player.grenadesThrown + " -> Grenades kills " + player.grenadeKills + " (" + player.grenadeKills / player.grenadesThrown + "%)");
+    player.getActionSender().sendChatMessage("- &eGrenade deaths: " + player.grenadeDeaths + " vs Rocket deaths: " + player.rocketDeaths);
+    player.getActionSender().sendChatMessage("- &eRockets shot: " + player.rocketsShot + " -> Rocket kills: " + player.rocketKills + " (" + player.rocketKills / player.rocketsShot + "%)");
     player.getActionSender().sendChatMessage("- &eLines used: " + player.linesUsed);
     player.getActionSender().sendChatMessage("- &ePoints earned: " + player.currentRoundPointsEarned + " -> Points spent" + player.pointsSpent + " (0.8)");
-    player.getActionSender().sendChatMessage("- &eFlags taken: " + player.flagsTaken + " -> Flags captured: " + player.captures + " (0.42)");
-    player.getActionSender().sendChatMessage("- &eHighest kill streak: " + player.highestKillStreak + " vs Highest death streak: " + player.highestDeathStreak + " (0.88)");
+    player.getActionSender().sendChatMessage("- &eFlags taken: " + player.flagsTaken + " -> Flags captured: " + player.captures + " (" + player.captures / player.flagsTaken + ")");
+    player.getActionSender().sendChatMessage("- &eHighest kill streak: " + player.highestKillStreak + " vs Highest death streak: " + player.highestDeathStreak);
     //player.getActionSender().sendChatMessage("- &eOverall performance: " + performanceRating);
     player.getActionSender().sendChatMessage("&a* You may need to scroll up to see all stats *");
   }
