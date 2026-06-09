@@ -366,6 +366,9 @@ public abstract class GameMode {
     player.currentRoundPointsEarned = 0;
     player.setPoints(GameSettings.getInt("InitialPoints"));
     player.kills = 0;
+    player.defKills = 0;
+    player.midKills = 0;
+    player.atkKills = 0;
     player.highestKillStreak = 0;
     player.mineKills = 0;
     player.tntKills = 0;

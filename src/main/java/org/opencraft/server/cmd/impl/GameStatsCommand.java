@@ -55,7 +55,7 @@ public class GameStatsCommand implements Command {
   }
 
   public void execute(Player player, CommandParameters params) {
-    //player.getActionSender().sendChatMessage("- &eDef kills: " + player.defenseKills + ", mid kills: " + player.midKills + ", atk kills: " + player.attackKills);
+    player.getActionSender().sendChatMessage("- &eDef kills: " + player.defKills + ", mid kills: " + player.midKills + ", atk kills: " + player.atkKills);
     player.getActionSender().sendChatMessage("- &eTotal kills: " + player.kills + " vs Total deaths: " + player.deaths + " (" + player.kills / player.deaths + ")");
     player.getActionSender().sendChatMessage("- &eTNT kills: " + player.tntKills + " vs TNT deaths " + player.tntDeaths + " (" + player.tntKills / player.tntDeaths + ")");
     player.getActionSender().sendChatMessage("- &eTag kills: " + player.tagKills + " vs Tag deaths " + player.tagDeaths + " (" + player.tagKills / player.tagDeaths + ")");

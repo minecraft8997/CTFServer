@@ -126,6 +126,9 @@ public class Player extends Entity implements IPlayer {
 
   // Stats
   public int kills = 0;
+  public int defKills = 0;
+  public int midKills = 0;
+  public int atkKills = 0;
   public int highestKillStreak = 0;
   public int highestDeathStreak = 0;
   public int mineKills = 0;
@@ -503,6 +506,31 @@ public class Player extends Entity implements IPlayer {
   public boolean isFlamethrowerEnabled() {
     return this.flamethrowerEnabled;
   }
+  /// Def = in player's own third. Mid = middle third. Atk = enemy third.
+  public void calculateKillSide(Player defender) {
+    int width = World.getWorld().getLevel().getWidth();
+    int enemyX = defender.getPosition().toBlockPos().getX();
+
+    int third = width / 3;
+
+    if (this.team == 0) {
+      if (enemyX < third) {
+        this.defKills++;
+      } else if (enemyX < third * 2) {
+        this.midKills++;
+      } else {
+        this.atkKills++;
+      }
+    } else if (this.team == 1) {
+      if (enemyX > width - third) {
+        this.defKills++;
+      } else if (enemyX > third) {
+        this.midKills++;
+      } else {
+        this.atkKills++;
+      }
+    }
+  }
 
   public void gotKill(Player defender) {
     if (defender.team == -1 || defender.team == team) {
@@ -510,6 +538,7 @@ public class Player extends Entity implements IPlayer {
     }
 
     kills++;
+    calculateKillSide(defender);
     deathstreak = 0;
     killstreak++;
     if (killstreak > highestKillStreak) {
