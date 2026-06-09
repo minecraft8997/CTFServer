@@ -124,6 +124,14 @@ public class Store {
       }
     }
 
+    if (itemname == "SmokeGrenade") {
+      long smokeGrenadeCooldown = (System.currentTimeMillis() - p.smokeGrenadeTime);
+      if (smokeGrenadeCooldown < smokeGrenadeRecharge * 1000) {
+        p.getActionSender().sendChatMessage("- &ePlease wait " + (smokeGrenadeRecharge - smokeGrenadeCooldown / 1000) + "" + " seconds");
+        return false;
+      }
+    }
+
     if (itemname == "Line") {
       long lineCooldown = (System.currentTimeMillis() - p.lineTime);
       if (lineCooldown < lineRecharge * 1000) {

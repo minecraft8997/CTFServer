@@ -61,7 +61,7 @@ public class SmokeGrenadeCommand implements Command {
     smokeGrenadeThread =
         new Thread(
             () -> {
-                player.smokeGrenadeTime = System.currentTimeMillis();
+              player.smokeGrenadeTime = System.currentTimeMillis();
 
               Position pos = player.getPosition().toBlockPos();
               Rotation r = player.getRotation();
