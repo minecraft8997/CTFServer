@@ -59,71 +59,84 @@ public class LineCommand implements Command {
   }
 
   public void execute(Player player, CommandParameters params) {
-    Position pos = player.getPosition().toBlockPos();
-    Rotation r = player.getRotation();
+    if (!GameSettings.getBoolean("EnableStore"))
+      player.getActionSender().sendChatMessage("- &eThe store is disabled");
+    else if (player.team == -1)
+      player.getActionSender().sendChatMessage("- &eYou must join a team to do that!");
+    else if (player.duelPlayer != null)
+      player.getActionSender().sendChatMessage("- &eYou cannot use the store while dueling!");
+    else if (!World.getWorld().getGameMode().tournamentGameStarted) player.getActionSender().sendChatMessage("- &eThe game has not started yet.");
+    else {
+      Position pos = player.getPosition().toBlockPos();
+      Rotation r = player.getRotation();
 
-    int requested = 25;
-    if (params.getArgumentCount() > 0) {
-      try {
-        requested = params.getIntegerArgument(0);
-      } catch (NumberFormatException ex) {
-        player.sendMessage("Usage: /line [length]");
+      int requested = 25;
+      if (params.getArgumentCount() > 0) {
+        try {
+          requested = params.getIntegerArgument(0);
+        } catch (NumberFormatException ex) {
+          player.sendMessage("Usage: /line [length]");
+          return;
+        }
+      }
+
+      long lineCooldown = (System.currentTimeMillis() - player.lineTime);
+      if (lineCooldown < 7 * 1000) {
+        player.getActionSender()
+            .sendChatMessage("- &ePlease wait " + (7 - lineCooldown / 1000) + "" + " seconds");
         return;
       }
-    }
 
-    long lineCooldown = (System.currentTimeMillis() - player.lineTime);
-    if (lineCooldown < 7 * 1000) {
-      player.getActionSender().sendChatMessage("- &ePlease wait " + (7 - lineCooldown / 1000) + "" + " seconds");
-      return;
-    }
+      requested = Math.max(1, Math.min(requested, 128));
+      int maxBlocks =
+          requested * 4; // This is actually 1:2 but the line tick has very weird calculations
 
-    requested = Math.max(1, Math.min(requested, 128));
-    int maxBlocks = requested * 4; // This is actually 1:2 but the line tick has very calculations
+      if (!GameSettings.getBoolean("Chaos")) {
+        if (player.getPoints() < requested) {
+          player.getActionSender().sendChatMessage(
+              "- &eYou need " + requested + " points!");
+          return;
+        }
 
-    if (!GameSettings.getBoolean("Chaos")) {
-      if (player.getPoints() < requested) {
+        player.subtractPoints(requested);
+        player.pointsSpent += requested;
+
         player.getActionSender().sendChatMessage(
-            "- &eYou need " + requested + " points!");
-        return;
+            "- &eYou have " + player.getPoints() + " points left");
       }
 
-      player.subtractPoints(requested);
-      player.pointsSpent += requested;
+      player.lineTime = System.currentTimeMillis();
+      player.linesUsed++;
 
-      player.getActionSender().sendChatMessage(
-          "- &eYou have " + player.getPoints() + " points left");
-    }
+      double heading =
+          Math.toRadians((int) (Server.getUnsigned(r.getRotation()) * ((float) 360 / 256) - 90));
+      double pitch =
+          Math.toRadians((int) (360 - Server.getUnsigned(r.getLook()) * ((float) 360 / 256)));
 
-    player.lineTime = System.currentTimeMillis();
-    player.linesUsed++;
+      double px = pos.getX();
+      double py = pos.getY();
+      double pz = pos.getZ();
 
-    double heading =
-        Math.toRadians((int) (Server.getUnsigned(r.getRotation()) * ((float) 360 / 256) - 90));
-    double pitch =
-        Math.toRadians((int) (360 - Server.getUnsigned(r.getLook()) * ((float) 360 / 256)));
-
-    double px = pos.getX();
-    double py = pos.getY();
-    double pz = pos.getZ();
-
-    double vx = Math.cos(heading) * Math.cos(pitch);
-    double vy = Math.sin(heading) * Math.cos(pitch);
-    double vz = Math.sin(pitch);
-    double x = px;
-    double y = py;
-    double z = pz;
-    for (int i = 0; i < maxBlocks; i++) {
-      int bx = (int) Math.round(x);
-      int by = (int) Math.round(y);
-      int bz = (int) Math.round(z);
-      int block = World.getWorld().getLevel().getBlock(bx, by, bz);
-      if ((block != 0 && block != 20) || World.getWorld().getLevel().ceiling < bz) return;
-      else if (i > 0) World.getWorld().getLevel().setBlock(bx, by, bz, BlockConstants.GLASS);
-      x += vx;
-      y += vy;
-      z += vz;
-      i++;
+      double vx = Math.cos(heading) * Math.cos(pitch);
+      double vy = Math.sin(heading) * Math.cos(pitch);
+      double vz = Math.sin(pitch);
+      double x = px;
+      double y = py;
+      double z = pz;
+      for (int i = 0; i < maxBlocks; i++) {
+        int bx = (int) Math.round(x);
+        int by = (int) Math.round(y);
+        int bz = (int) Math.round(z);
+        int block = World.getWorld().getLevel().getBlock(bx, by, bz);
+        if ((block != 0 && block != 20) || World.getWorld().getLevel().ceiling < bz)
+          return;
+        else if (i > 0)
+          World.getWorld().getLevel().setBlock(bx, by, bz, BlockConstants.GLASS);
+        x += vx;
+        y += vy;
+        z += vz;
+        i++;
+      }
     }
   }
 }

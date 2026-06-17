@@ -41,6 +41,7 @@ import org.opencraft.server.cmd.Command;
 import org.opencraft.server.cmd.CommandParameters;
 import org.opencraft.server.model.Player;
 import org.opencraft.server.model.StoreItem;
+import org.opencraft.server.game.impl.GameSettings;
 
 public class StoreCommand implements Command {
   private static final StoreCommand INSTANCE = new StoreCommand();
@@ -68,7 +69,7 @@ public class StoreCommand implements Command {
       i++;
     }
     player.getActionSender().sendChatMessage("- &a" + (i + 1) + ". Line - Builds a bridge - /line");
-    player.getActionSender().sendChatMessage("  &2(Default line price is 25. Use /line [number] to specify length)");
+    player.getActionSender().sendChatMessage("  &2(Default line price is " + GameSettings.getInt("LinePrice") + ". Use /line [number] to specify length)");
     player.getActionSender().sendChatMessage("- &eSay a command to buy something!");
   }
 }
