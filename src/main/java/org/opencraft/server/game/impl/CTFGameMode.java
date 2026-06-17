@@ -843,10 +843,12 @@ public class CTFGameMode extends GameMode {
 
     new Thread(() -> {
       int i = 0;
-      while (redFlagTaken && blueFlagTaken) {
+      boolean finished = false;
+      while (redFlagTaken && blueFlagTaken && !finished) {
         // Stop when borders are 5 blocks from the middle
         if (i >= (width / 2) - 5) {
           World.getWorld().broadcast("- &eThe borders have stopped shrinking!");
+          finished = true;
           break;
         }
 
@@ -878,12 +880,6 @@ public class CTFGameMode extends GameMode {
           Thread.currentThread().interrupt();
           break;
         }
-      }
-
-      // Remove zones
-      for (Player player : World.getWorld().getPlayerList().getPlayers()) {
-        player.getActionSender().sendRemoveSelectionCuboid(125);
-        player.getActionSender().sendRemoveSelectionCuboid(124);
       }
     }).start();
   }
@@ -1019,6 +1015,12 @@ public class CTFGameMode extends GameMode {
       placeBlueFlag();
       World.getWorld().broadcast("- &eThe blue flag has been returned!");
       blueFlagTakenBy = null;
+
+      // Remove shrinking zones if present
+      for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+        p.getActionSender().sendRemoveSelectionCuboid(125);
+        p.getActionSender().sendRemoveSelectionCuboid(124);
+      }
     }
   }
 
@@ -1029,6 +1031,12 @@ public class CTFGameMode extends GameMode {
       placeRedFlag();
       World.getWorld().broadcast("- &eThe red flag has been returned!");
       redFlagTakenBy = null;
+
+      // Remove shrinking zones if present
+      for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+        p.getActionSender().sendRemoveSelectionCuboid(125);
+        p.getActionSender().sendRemoveSelectionCuboid(124);
+      }
     }
   }
 
