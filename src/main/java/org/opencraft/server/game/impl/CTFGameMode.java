@@ -808,7 +808,57 @@ public class CTFGameMode extends GameMode {
         World.getWorld().broadcast("- &eIf your teammate gets tagged you'll drop the flag");
         stalemateTags = true;
       }
+
+      createShrinkingBorders();
     }
+  }
+
+  private void createShrinkingBorders() {
+    int width = World.getWorld().getLevel().getWidth();
+    int depth = World.getWorld().getLevel().getDepth();
+
+    World.getWorld().broadcast("- &eThe borders are shrinking! If you have the flag, keep out!");
+
+    new Thread(() -> {
+      int i = 0;
+      while (redFlagTaken && blueFlagTaken) {
+        // Stop when borders are 5 blocks from the middle
+        if (i >= (width / 2) - 5) {
+          World.getWorld().broadcast("- &eThe borders have stopped shrinking!");
+          break;
+        }
+
+        for (Player player : World.getWorld().getPlayerList().getPlayers()) {
+          // Remove existing zones if they exist
+          player.getActionSender().sendRemoveSelectionCuboid(125);
+          player.getActionSender().sendRemoveSelectionCuboid(124);
+
+          // Create new ones
+          player.getActionSender().sendSelectionCuboid(
+              125, "RedEdgeBorderZone", (short)0, (short)0, (short)0, (short)i, (short)1024, (short)depth, (short)124, (short)31, (short)206, (short)64
+          );
+
+          player.getActionSender().sendSelectionCuboid(
+              124, "BlueEdgeBorderZone", (short)width, (short)0, (short)0, (short)(width - i), (short)1024, (short)depth, (short)124, (short)31, (short)206, (short)64
+          );
+        }
+
+        i += 1;
+
+        try {
+          Thread.sleep(2000);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break;
+        }
+      }
+
+      // Remove zones
+      for (Player player : World.getWorld().getPlayerList().getPlayers()) {
+        player.getActionSender().sendRemoveSelectionCuboid(125);
+        player.getActionSender().sendRemoveSelectionCuboid(124);
+      }
+    }).start();
   }
 
   public void blockSpawnZones(Player p) {
