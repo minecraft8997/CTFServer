@@ -132,14 +132,22 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
     // Kill floor
     boolean belowKillFloor = (z - 16) / 32 < World.getWorld().getLevel().floor;
     if (belowKillFloor && !player.isSafe()) {
-      player.markSafe();
-      World.getWorld().broadcast("- " + player.parseName() + " died!");
-      player.sendToTeamSpawn();
-      if (World.getWorld().getGameMode() instanceof  CTFGameMode && player.hasFlag) {
-        CTFGameMode ctf = (CTFGameMode) World.getWorld().getGameMode();
-        ctf.dropFlag(player, true, false);
+      if (player.team != -1) {
+        player.markSafe();
+        World.getWorld().broadcast("- " + player.parseName() + " died!");
+        player.sendToTeamSpawn();
+
+        if (org.opencraft.server.game.impl.GameSettings.getBoolean("Elimination")) {
+          World.getWorld().getGameMode().checkEliminationLives(player);
+        }
+
+        if (World.getWorld().getGameMode() instanceof CTFGameMode && player.hasFlag) {
+          CTFGameMode ctf = (CTFGameMode) World.getWorld().getGameMode();
+          ctf.dropFlag(player, true, false);
+        }
       }
     }
+
     boolean isOnGround = World.getWorld().getLevel().getBlock(
         blockPosition.getX(), blockPosition.getY(), blockPosition.getZ() - 2) > 0;
     if (isOnGround && !belowKillFloor) {

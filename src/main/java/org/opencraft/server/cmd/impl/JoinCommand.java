@@ -40,6 +40,7 @@ import org.opencraft.server.cmd.Command;
 import org.opencraft.server.cmd.CommandParameters;
 import org.opencraft.server.game.impl.GameSettings;
 import org.opencraft.server.model.Player;
+import org.opencraft.server.model.World;
 
 public class JoinCommand implements Command {
 
@@ -57,6 +58,15 @@ public class JoinCommand implements Command {
 
   @Override
   public void execute(Player player, CommandParameters params) {
+    if (GameSettings.getBoolean("Elimination")) {
+      if (World.getWorld().getGameMode().eliminationLives.containsKey(player)) {
+        if (World.getWorld().getGameMode().eliminationLives.get(player) <= 0) {
+          player.getActionSender()
+              .sendChatMessage("You have 0 lives left so you cannot join a team.");
+          return;
+        }
+      }
+    }
     if (!GameSettings.getBoolean("Tournament")) {
       if (params.getArgumentCount() == 1) player.joinTeam(params.getStringArgument(0));
       else player.autoJoinTeam();

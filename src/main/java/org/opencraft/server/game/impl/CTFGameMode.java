@@ -50,6 +50,8 @@ import org.opencraft.server.model.*;
 import org.opencraft.server.model.BlockLog.BlockInfo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.opencraft.server.replay.ReplayManager;
 import org.opencraft.server.task.TaskQueue;
@@ -282,6 +284,12 @@ public class CTFGameMode extends GameMode {
         } else {
           World.getWorld().broadcast(p.parseName() + " exploded " + t.getColoredName() + (type == null ? "" : " &f(" + type + ")"));
         }
+      }
+    }
+
+    for (Player t : killed) {
+      if (org.opencraft.server.game.impl.GameSettings.getBoolean("Elimination")) {
+        World.getWorld().getGameMode().checkEliminationLives(t);
       }
     }
 
@@ -623,6 +631,17 @@ public class CTFGameMode extends GameMode {
                 winner = "blue";
                 winnerID = 1;
               }
+
+              if (GameSettings.getBoolean("Elimination")) {
+                if (redPlayers == 0) {
+                  winner = "blue";
+                  winnerID = 1;
+                } else if (bluePlayers == 0) {
+                  winner = "red";
+                  winnerID = 0;
+                }
+              }
+
               if (winner == null) {
                 World.getWorld().broadcast("- &6The game ended in a tie!");
               } else {

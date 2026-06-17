@@ -96,6 +96,7 @@ public abstract class GameMode {
   public String previousMap = null;
   public Level map;
   private ArrayList<DropItem> items = new ArrayList<>(8);
+  public final Map<Player, Integer> eliminationLives = new HashMap<>();
 
   public GameMode() {
     registerCommand("accept", DuelAcceptCommand.getCommand());
@@ -437,6 +438,7 @@ public abstract class GameMode {
               rtvYesPlayers.clear();
               rtvNoPlayers.clear();
               nominatedMaps.clear();
+              eliminationLives.clear();
               isFirstBlood = true;
               for (Player p : World.getWorld().getPlayerList().getPlayers()) {
                 p.joinTeam("spec", false);
@@ -752,6 +754,31 @@ public abstract class GameMode {
 
   public void playerRespawn(Player p) {
 
+  }
+
+  public void checkEliminationLives(Player player) {
+    if (!eliminationLives.containsKey(player)) {
+      return;
+    }
+
+    int lives = eliminationLives.get(player) - 1;
+    eliminationLives.put(player, lives);
+
+    if (lives <= 0) {
+      eliminatePlayer(player);
+    } else {
+      player.getActionSender().sendChatMessage("&f- &eYou have " + lives + " lives remaining.");
+    }
+  }
+
+  private void eliminatePlayer(Player player) {
+    player.getActionSender().sendChatMessage("&cYou have been eliminated.");
+    player.joinTeam("spec");
+    World.getWorld().broadcast("&f- &ePlayer " + player.parseName() + " has been eliminated!");
+
+    if (redPlayers == 0 || bluePlayers == 0) {
+      endGame();
+    }
   }
 
   protected boolean isSuddenDeath() {

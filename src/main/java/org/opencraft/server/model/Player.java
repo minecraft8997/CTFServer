@@ -753,6 +753,15 @@ public class Player extends Entity implements IPlayer {
     if (!(team.equals("red") || team.equals("blue") || team.equals("spec"))) {
       return;
     }
+
+    if (!team.equals("spec") && GameSettings.getBoolean("Elimination")) {
+      Map<Player, Integer> eliminationLives = World.getWorld().getGameMode().eliminationLives;
+      if (!eliminationLives.containsKey(this)) {
+        int defaultLives = GameSettings.getInt("EliminationLives");
+        eliminationLives.put(this, defaultLives);
+      }
+    }
+
     if (this.team == -1 && !team.equals("spec")) {
       getActionSender()
           .sendChatMessage(

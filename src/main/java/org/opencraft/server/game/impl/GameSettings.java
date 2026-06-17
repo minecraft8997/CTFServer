@@ -65,6 +65,8 @@ public class GameSettings {
     add("VineDecayTime", TYPE_INT, 30000);
     add("TNTTime", TYPE_FLOAT, 1.0f);
     add("QuoteCooldown", TYPE_INT, 10);
+    add("Elimination", TYPE_BOOLEAN, false);
+    add("EliminationLives", TYPE_INT, 1);
   }
 
   public static Object get(String k) {
