@@ -1255,10 +1255,6 @@ Z        <field>
           <name>cinematic_gui</name>
           <fields>
               <field>
-                  <name>id</name>
-                  <type>BYTE</type>
-              </field>
-              <field>
                   <name>hide_crosshair</name>
                   <type>BYTE</type>
               </field>
@@ -1283,7 +1279,7 @@ Z        <field>
                   <type>BYTE</type>
               </field>
               <field>
-                  <name>opacity</name>
+                  <name>alpha</name>
                   <type>BYTE</type>
               </field>
               <field>

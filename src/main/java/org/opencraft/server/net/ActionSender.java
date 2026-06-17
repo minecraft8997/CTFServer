@@ -868,14 +868,13 @@ public class ActionSender {
     session.send(bldr.toPacket());
   }
 
-  public void sendCinematicGui(int hideCrosshair, int hideHotbar, int hideHand, int r, int g, int b, int alpha, int apertureSize) {
+  public void sendCinematicGui(boolean hideCrosshair, boolean hideHotbar, boolean hideHand, int r, int g, int b, int alpha, int apertureSize) {
     PacketBuilder bldr =
         new PacketBuilder(PersistingPacketManager.getPacketManager().getOutgoingPacket(56));
 
-    bldr.putByte("id", -1);
-    bldr.putByte("hide_crosshair", hideCrosshair);
-    bldr.putByte("hide_hotbar", hideHotbar);
-    bldr.putByte("hide_hand", hideHand);
+    bldr.putBoolean("hide_crosshair", hideCrosshair);
+    bldr.putBoolean("hide_hotbar", hideHotbar);
+    bldr.putBoolean("hide_hand", hideHand);
     bldr.putByte("r", r);
     bldr.putByte("g", g);
     bldr.putByte("b", b);
