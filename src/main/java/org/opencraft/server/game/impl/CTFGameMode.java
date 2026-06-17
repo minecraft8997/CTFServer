@@ -293,12 +293,6 @@ public class CTFGameMode extends GameMode {
       }
     }
 
-    for (Player t : killed) {
-      if (org.opencraft.server.game.impl.GameSettings.getBoolean("Elimination")) {
-        World.getWorld().getGameMode().checkEliminationLives(t);
-      }
-    }
-
     for (Player player : World.getWorld().getPlayerList().getPlayers(true)) {
       int ex = x  * 32 + 16;
       int ez = y  * 32 + 16;

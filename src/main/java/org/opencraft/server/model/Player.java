@@ -676,6 +676,10 @@ public class Player extends Entity implements IPlayer {
         }
       }
     }
+
+    if (org.opencraft.server.game.impl.GameSettings.getBoolean("Elimination")) {
+      World.getWorld().getGameMode().checkEliminationLives(this);
+    }
   }
 
   public String getNameChar() {
