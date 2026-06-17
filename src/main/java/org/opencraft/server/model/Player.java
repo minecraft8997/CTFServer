@@ -203,6 +203,7 @@ public class Player extends Entity implements IPlayer {
   // STORE STUFF
   public int bigTNTRemaining = 0;
   public boolean isCreepering = false;
+  public long edgeZoneEntryTime = 0;
 
   // Laser Tag
   private int ammo;

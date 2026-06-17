@@ -57,6 +57,8 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
       return;
     }
 
+    // TODO: This code really needs to be optimised to prevent duplicate code
+
     final Player player = session.getPlayer();
     Position oldPosition = player.getPosition();
 
@@ -154,9 +156,70 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
       player.safePosition = position;
     }
 
-    // Check if the player has entered either spawn zones with the flag
     if (player.hasFlag) {
       Level level = World.getWorld().getLevel();
+
+      if (World.getWorld().getGameMode() instanceof CTFGameMode) {
+        boolean inEdgeZone = false;
+        CTFGameMode ctf = (CTFGameMode) World.getWorld().getGameMode();
+
+        if (ctf.redFlagTaken && ctf.blueFlagTaken) {
+          // Red edge zone
+          if (ctf.redEdgeZoneMin != null && ctf.redEdgeZoneMax != null) {
+            int minX = Math.min(ctf.redEdgeZoneMin.getX(), ctf.redEdgeZoneMax.getX()) + 1;
+            int maxX = Math.max(ctf.redEdgeZoneMin.getX(), ctf.redEdgeZoneMax.getX()) - 1;
+
+            int minY = Math.min(ctf.redEdgeZoneMin.getY(), ctf.redEdgeZoneMax.getY()) - 1;
+            int maxY = Math.max(ctf.redEdgeZoneMin.getY(), ctf.redEdgeZoneMax.getY()) + 1;
+
+            int minZ = Math.min(ctf.redEdgeZoneMin.getZ(), ctf.redEdgeZoneMax.getZ());
+            int maxZ = Math.max(ctf.redEdgeZoneMin.getZ(), ctf.redEdgeZoneMax.getZ());
+
+            if ((x / 32 >= minX && x / 32 <= maxX)
+                && (z / 32 >= minY && z / 32 <= maxY)
+                && (y / 32 >= minZ && y / 32 <= maxZ)) {
+              inEdgeZone = true;
+            }
+          }
+
+          // Blue edge zone
+          if (ctf.blueEdgeZoneMin != null && ctf.blueEdgeZoneMax != null) {
+            int minX = Math.min(ctf.blueEdgeZoneMin.getX(), ctf.blueEdgeZoneMax.getX());
+            int maxX = Math.max(ctf.blueEdgeZoneMin.getX(), ctf.blueEdgeZoneMax.getX()) + 1;
+
+            int minY = Math.min(ctf.blueEdgeZoneMin.getY(), ctf.blueEdgeZoneMax.getY()) - 1;
+            int maxY = Math.max(ctf.blueEdgeZoneMin.getY(), ctf.blueEdgeZoneMax.getY()) + 1;
+
+            int minZ = Math.min(ctf.blueEdgeZoneMin.getZ(), ctf.blueEdgeZoneMax.getZ());
+            int maxZ = Math.max(ctf.blueEdgeZoneMin.getZ(), ctf.blueEdgeZoneMax.getZ());
+
+            if ((x / 32 >= minX && x / 32 <= maxX)
+                && (z / 32 >= minY && z / 32 <= maxY)
+                && (y / 32 >= minZ && y / 32 <= maxZ)) {
+              inEdgeZone = true;
+            }
+          }
+
+          // Entered zone
+          if (inEdgeZone) {
+            if (player.edgeZoneEntryTime == 0) {
+              player.edgeZoneEntryTime = System.currentTimeMillis();
+
+              player.getActionSender().sendChatMessage("&cLook out!", 101);
+              player.getActionSender().sendChatMessage("&7Head to the middle to escape the void!", 102);
+            }
+          }
+          // Left zone
+          else {
+            if (player.edgeZoneEntryTime != 0) {
+              player.edgeZoneEntryTime = 0;
+
+              player.getActionSender().sendChatMessage("", 101);
+              player.getActionSender().sendChatMessage("", 102);
+            }
+          }
+        }
+      }
 
       if (player.team == 0 && level.redSpawnZoneMin != null && level.redSpawnZoneMax != null) {
         int minX = level.redSpawnZoneMin.getX() - 32;

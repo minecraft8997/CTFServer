@@ -81,6 +81,12 @@ public class CTFGameMode extends GameMode {
   public Player redFlagTakenBy;
   public Player blueFlagTakenBy;
 
+  // Zones for shrinking borders
+  public Position redEdgeZoneMin;
+  public Position redEdgeZoneMax;
+  public Position blueEdgeZoneMin;
+  public Position blueEdgeZoneMax;
+
   private boolean stalemateTags;
   private boolean suddenDeath;
 
@@ -828,13 +834,16 @@ public class CTFGameMode extends GameMode {
         stalemateTags = true;
       }
 
-      createShrinkingBorders();
+      if (GameSettings.getBoolean("ShrinkingZones")){
+        createShrinkingBorders();
+      }
     }
   }
 
   private void createShrinkingBorders() {
-    int width = World.getWorld().getLevel().getWidth();
-    int depth = World.getWorld().getLevel().getDepth();
+    Level level = World.getWorld().getLevel();
+    int width = level.getWidth();
+    int length = level.getHeight();
 
     World.getWorld().broadcast("- &eThe borders are shrinking! If you have the flag, keep out!");
 
@@ -847,6 +856,11 @@ public class CTFGameMode extends GameMode {
           break;
         }
 
+        redEdgeZoneMin = new Position(0, 0, 0);
+        redEdgeZoneMax = new Position(i, 1024, length);
+        blueEdgeZoneMin = new Position(width, 0, 0);
+        blueEdgeZoneMax = new Position(width - i, 1024, length);
+
         for (Player player : World.getWorld().getPlayerList().getPlayers()) {
           // Remove existing zones if they exist
           player.getActionSender().sendRemoveSelectionCuboid(125);
@@ -854,18 +868,18 @@ public class CTFGameMode extends GameMode {
 
           // Create new ones
           player.getActionSender().sendSelectionCuboid(
-              125, "RedEdgeBorderZone", (short)0, (short)0, (short)0, (short)i, (short)1024, (short)depth, (short)124, (short)31, (short)206, (short)64
+              125, "RedEdgeBorderZone", (short)0, (short)0, (short)0, (short)i, (short)1024, (short)length, (short)124, (short)31, (short)206, (short)64
           );
 
           player.getActionSender().sendSelectionCuboid(
-              124, "BlueEdgeBorderZone", (short)width, (short)0, (short)0, (short)(width - i), (short)1024, (short)depth, (short)124, (short)31, (short)206, (short)64
+              124, "BlueEdgeBorderZone", (short)width, (short)0, (short)0, (short)(width - i), (short)1024, (short)length, (short)124, (short)31, (short)206, (short)64
           );
         }
 
         i += 1;
 
         try {
-          Thread.sleep(2000);
+          Thread.sleep(GameSettings.getInt("ShrinkingZonesUpdateTime"));
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           break;
@@ -1278,6 +1292,21 @@ public class CTFGameMode extends GameMode {
     int z = pos.getZ();
 
     if (p.team != -1) {
+      if (GameSettings.getBoolean("ShrinkingZones")) {
+        if (redFlagTaken && blueFlagTaken && p.hasFlag) {
+          if (p.edgeZoneEntryTime != 0
+              && System.currentTimeMillis() - p.edgeZoneEntryTime
+              > GameSettings.getInt("ShrinkingZonesDeathTime")) {
+
+            p.markSafe();
+            World.getWorld().broadcast("- " + p.parseName() + " was killed by the void!");
+            p.sendToTeamSpawn();
+            dropFlag(p, true, false);
+            p.edgeZoneEntryTime = 0;
+          }
+        }
+      }
+
       for (Mine m : World.getWorld().getAllMines()) {
         int mx = (m.x - 16) / 32;
         int my = (m.y - 16) / 32;
