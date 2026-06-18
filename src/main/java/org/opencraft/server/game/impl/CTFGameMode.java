@@ -206,7 +206,6 @@ public class CTFGameMode extends GameMode {
           killed.add(t);
           p.gotKill(t);
           t.sendToTeamSpawn();
-          t.died(p);
 
           if (type == "rocket") {
             float dx = x - p.rocketStartPosition.getX();
@@ -254,6 +253,8 @@ public class CTFGameMode extends GameMode {
               }
             }
           }
+
+          t.died(p);
         }
       }
     }
