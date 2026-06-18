@@ -840,7 +840,7 @@ public class CTFGameMode extends GameMode {
     }
   }
 
-  private void createShrinkingBorders() {
+  public void createShrinkingBorders() {
     Level level = World.getWorld().getLevel();
     int width = level.getWidth();
     int length = level.getHeight();

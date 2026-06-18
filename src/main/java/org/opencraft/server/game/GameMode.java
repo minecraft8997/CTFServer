@@ -172,6 +172,7 @@ public abstract class GameMode {
     registerCommand("setspawnzone", SetSpawnZoneCommand.getCommand());
     registerCommand("solid", SolidCommand.getCommand());
     registerCommand("spec", SpecCommand.getCommand());
+    registerCommand("stalemate", StalemateCommand.getCommand());
     registerCommand("start", StartCommand.INSTANCE);
     registerCommand("stats", GameStatsCommand.getCommand());
     registerCommand("status", StatusCommand.getCommand());
