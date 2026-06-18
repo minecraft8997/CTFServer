@@ -72,6 +72,7 @@ public class GameSettings {
     add("ShrinkingZonesUpdateTime", TYPE_INT, 2000);
     add("ShrinkingZonesDeathTime", TYPE_INT, 3000);
     add("ShrinkingZonesKillEveryone", TYPE_BOOLEAN, false);
+    add("CanGrabWithZeroEnemies", TYPE_BOOLEAN, false);
   }
 
   public static Object get(String k) {

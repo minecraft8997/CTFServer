@@ -1151,7 +1151,7 @@ public class CTFGameMode extends GameMode {
       if (p.team == 1) {
         if (!redFlagTaken) {
           // red flag taken
-          if (getRedPlayers() == 0 || getBluePlayers() == 0) {
+          if ((getRedPlayers() == 0 || getBluePlayers() == 0) && !GameSettings.getBoolean("CanGrabWithZeroEnemies")) {
             placeRedFlag();
             p.getActionSender()
                 .sendChatMessage("- &eFlag cannot be captured when one team has 0 " + "people");
@@ -1224,7 +1224,7 @@ public class CTFGameMode extends GameMode {
       if (p.team == 0) {
         if (!blueFlagTaken) {
           // blue flag taken
-          if (getRedPlayers() == 0 || getBluePlayers() == 0) {
+          if ((getRedPlayers() == 0 || getBluePlayers() == 0) && !GameSettings.getBoolean("CanGrabWithZeroEnemies")) {
             placeBlueFlag();
             p.getActionSender()
                 .sendChatMessage("- &eFlag cannot be captured when one team has 0 " + "people");
