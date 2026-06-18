@@ -776,7 +776,7 @@ public abstract class GameMode {
     player.joinTeam("spec");
     World.getWorld().broadcast("&f- &ePlayer " + player.parseName() + " has been eliminated!");
 
-    if (redPlayers == 0 || bluePlayers == 0) {
+    if ((redPlayers == 0 || bluePlayers == 0) && GameSettings.getBoolean("EliminationEndIfZeroEnemies")) {
       endGame();
     }
   }

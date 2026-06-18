@@ -67,6 +67,7 @@ public class GameSettings {
     add("QuoteCooldown", TYPE_INT, 10);
     add("Elimination", TYPE_BOOLEAN, false);
     add("EliminationLives", TYPE_INT, 1);
+    add("EliminationEndIfZeroEnemies", TYPE_BOOLEAN, true);
     add("ShrinkingZones", TYPE_BOOLEAN, false);
     add("ShrinkingZonesUpdateTime", TYPE_INT, 2000);
     add("ShrinkingZonesDeathTime", TYPE_INT, 3000);

@@ -808,6 +808,12 @@ public class CTFGameMode extends GameMode {
       player.hasFlag = false;
       unblockSpawnZones(player);
       World.getWorld().broadcast("- " + player.parseName() + " dropped the flag!");
+
+      // Remove shrinking zones if present
+      for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+        p.getActionSender().sendRemoveSelectionCuboid(125);
+        p.getActionSender().sendRemoveSelectionCuboid(124);
+      }
     }
     player.disableFlameThrower();
   }
@@ -1015,12 +1021,12 @@ public class CTFGameMode extends GameMode {
       placeBlueFlag();
       World.getWorld().broadcast("- &eThe blue flag has been returned!");
       blueFlagTakenBy = null;
+    }
 
-      // Remove shrinking zones if present
-      for (Player p : World.getWorld().getPlayerList().getPlayers()) {
-        p.getActionSender().sendRemoveSelectionCuboid(125);
-        p.getActionSender().sendRemoveSelectionCuboid(124);
-      }
+    // Remove shrinking zones if present
+    for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+      p.getActionSender().sendRemoveSelectionCuboid(125);
+      p.getActionSender().sendRemoveSelectionCuboid(124);
     }
   }
 
@@ -1031,12 +1037,12 @@ public class CTFGameMode extends GameMode {
       placeRedFlag();
       World.getWorld().broadcast("- &eThe red flag has been returned!");
       redFlagTakenBy = null;
+    }
 
-      // Remove shrinking zones if present
-      for (Player p : World.getWorld().getPlayerList().getPlayers()) {
-        p.getActionSender().sendRemoveSelectionCuboid(125);
-        p.getActionSender().sendRemoveSelectionCuboid(124);
-      }
+    // Remove shrinking zones if present
+    for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+      p.getActionSender().sendRemoveSelectionCuboid(125);
+      p.getActionSender().sendRemoveSelectionCuboid(124);
     }
   }
 
@@ -1310,7 +1316,7 @@ public class CTFGameMode extends GameMode {
               if (org.opencraft.server.game.impl.GameSettings.getBoolean("Elimination")) {
                 World.getWorld().getGameMode().checkEliminationLives(p);
               }
-              
+
               dropFlag(p, true, false);
               p.edgeZoneEntryTime = 0;
             }
