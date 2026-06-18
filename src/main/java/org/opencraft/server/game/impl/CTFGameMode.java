@@ -1295,16 +1295,25 @@ public class CTFGameMode extends GameMode {
 
     if (p.team != -1) {
       if (GameSettings.getBoolean("ShrinkingZones")) {
-        if (redFlagTaken && blueFlagTaken && p.hasFlag) {
-          if (p.edgeZoneEntryTime != 0
-              && System.currentTimeMillis() - p.edgeZoneEntryTime
-              > GameSettings.getInt("ShrinkingZonesDeathTime")) {
+        if (redFlagTaken && blueFlagTaken) {
+          boolean shouldDie = GameSettings.getBoolean("ShrinkingZonesKillEveryone") || p.hasFlag;
 
-            p.markSafe();
-            World.getWorld().broadcast("- " + p.parseName() + " was killed by the void!");
-            p.sendToTeamSpawn();
-            dropFlag(p, true, false);
-            p.edgeZoneEntryTime = 0;
+          if (shouldDie) {
+            if (p.edgeZoneEntryTime != 0
+                && System.currentTimeMillis() - p.edgeZoneEntryTime
+                > GameSettings.getInt("ShrinkingZonesDeathTime")) {
+
+              p.markSafe();
+              World.getWorld().broadcast("- " + p.parseName() + " was killed by the void!");
+              p.sendToTeamSpawn();
+
+              if (org.opencraft.server.game.impl.GameSettings.getBoolean("Elimination")) {
+                World.getWorld().getGameMode().checkEliminationLives(p);
+              }
+              
+              dropFlag(p, true, false);
+              p.edgeZoneEntryTime = 0;
+            }
           }
         }
       }
