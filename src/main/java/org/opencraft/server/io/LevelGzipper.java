@@ -98,8 +98,8 @@ public final class LevelGzipper {
     }
     Runnable job = () -> {
       try {
-        sendBlocks(level.getCompressedBlocks0(), session.getActionSender(), false);
-        sendBlocks(level.getCompressedBlocks1(), session.getActionSender(), true);
+        sendBlocks(level.getCompressedBlocks0(!session.isExtensionSupported("FastMap")), session.getActionSender(), false);
+        sendBlocks(level.getCompressedBlocks1(!session.isExtensionSupported("FastMap")), session.getActionSender(), true);
 
         if (session.isExtensionSupported("EnvMapAspect", 1))
           session.getActionSender().sendMapAspect();

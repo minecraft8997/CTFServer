@@ -47,6 +47,7 @@ import com.flowpowered.nbt.stream.NBTInputStream;
 import com.google.common.collect.ImmutableList;
 import java.awt.Color;
 
+import java.util.zip.GZIPOutputStream;
 import org.opencraft.server.Server;
 import org.opencraft.server.game.GameMode;
 import org.opencraft.server.game.impl.GameSettings;
@@ -119,7 +120,9 @@ public final class Level implements Cloneable {
   private byte[] blocks0;
   private byte[] blocks1;
   private byte[] compressedBlocks0;
+  private byte[] compressedBlocks0Gzip;
   private byte[] compressedBlocks1;
+  private byte[] compressedBlocks1Gzip;
   /** Light depth array. */
   private short[][] lightDepths;
 
@@ -984,24 +987,44 @@ public final class Level implements Cloneable {
     }
   }
 
-  public byte[] getCompressedBlocks0() throws IOException {
-    if (compressedBlocks0 == null) {
-      compressedBlocks0 = compressBytes(blocks0);
+  public byte[] getCompressedBlocks0(boolean gzip) throws IOException {
+    if (gzip) {
+      if (compressedBlocks0Gzip == null) {
+        compressedBlocks0Gzip = compressBytes(blocks0, true);
+      }
+      return compressedBlocks0Gzip;
+    } else {
+      if (compressedBlocks0 == null) {
+        compressedBlocks0 = compressBytes(blocks0, false);
+      }
+      return compressedBlocks0;
     }
-    return compressedBlocks0;
   }
 
-  public byte[] getCompressedBlocks1() throws IOException{
-    if (compressedBlocks1 == null) {
-      compressedBlocks1 = compressBytes(blocks1);
+  public byte[] getCompressedBlocks1(boolean gzip) throws IOException{
+    if (gzip) {
+      if (compressedBlocks1Gzip == null) {
+        compressedBlocks1Gzip = compressBytes(blocks1, true);
+      }
+      return compressedBlocks1Gzip;
+    } else {
+      if (compressedBlocks1 == null) {
+        compressedBlocks1 = compressBytes(blocks1, false);
+      }
+      return compressedBlocks1;
     }
-    return compressedBlocks1;
   }
 
-  private static byte[] compressBytes(byte[] bytes) throws IOException {
+  private static byte[] compressBytes(byte[] bytes, boolean gzip) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    Deflater def = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
-    DataOutputStream os = new DataOutputStream(new DeflaterOutputStream(out, def));
+    DataOutputStream os;
+    if (gzip) {
+      os = new DataOutputStream(new GZIPOutputStream(out));
+      os.writeInt(bytes.length);
+    } else {
+      Deflater def = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+      os = new DataOutputStream(new DeflaterOutputStream(out, def));
+    }
     os.write(bytes);
     os.close();
     return out.toByteArray();

@@ -321,13 +321,13 @@ public final class World {
         c.getName().replace("_m", World.getWorld().getLevel().id),
         c.getMessage() + "&0-hax -push" + level.getMotd(),
         op);
-    if (!session.isExtensionSupported("HackControl")) {
+    /*if (!session.isExtensionSupported("HackControl")) {
       session
           .getActionSender()
           .sendLoginFailure("Enable \"Enhanced\" mode in CC launcher settings to play");
       session.close();
       return;
-    }
+    }*/
     session.getActionSender().sendHackControl(true);
     LevelGzipper.getLevelGzipper().gzipLevel(session);
   }

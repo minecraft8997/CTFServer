@@ -728,7 +728,11 @@ public class Player extends Entity implements IPlayer {
   public void makeVisible() {
     for (Player p : World.getWorld().getPlayerList().getPlayers(true)) {
       if (this != p && p.team == -1) {
-        p.getActionSender().sendExtSpawn(instance);
+        if (p.getSession().isExtensionSupported("ExtPlayerList", 2)) {
+          p.getActionSender().sendExtSpawn(instance);
+        } else {
+          p.getActionSender().sendSpawn(instance);
+        }
       }
     }
   }
@@ -881,7 +885,11 @@ public class Player extends Entity implements IPlayer {
       if (!canSee(p)) {
         getActionSender().sendRemoveEntity(p);
       } else {
-        getActionSender().sendExtSpawn(p);
+        if (p.getSession().isExtensionSupported("ExtPlayerList", 2)) {
+          p.getActionSender().sendExtSpawn(instance);
+        } else {
+          p.getActionSender().sendSpawn(instance);
+        }
       }
     }
 
