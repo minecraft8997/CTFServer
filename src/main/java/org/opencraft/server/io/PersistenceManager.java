@@ -90,7 +90,17 @@ public final class PersistenceManager {
   public Object load(String file) {
     try {
       return xstream.fromXML(new FileInputStream(file));
-    } catch (FileNotFoundException ex) {
+    } catch (Exception ex) {
+      System.err.println("Failed loading: " + file);
+      ex.printStackTrace();
+
+      Throwable cause = ex.getCause();
+      while (cause != null) {
+        System.err.println("Caused by:");
+        cause.printStackTrace();
+        cause = cause.getCause();
+      }
+
       throw new RuntimeException(ex);
     }
   }
