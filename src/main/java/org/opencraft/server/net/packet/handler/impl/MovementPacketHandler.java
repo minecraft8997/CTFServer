@@ -39,6 +39,7 @@ package org.opencraft.server.net.packet.handler.impl;
 import org.opencraft.server.Constants;
 import org.opencraft.server.Server;
 import org.opencraft.server.game.impl.CTFGameMode;
+import org.opencraft.server.game.impl.GameSettings;
 import org.opencraft.server.model.*;
 import org.opencraft.server.net.MinecraftSession;
 import org.opencraft.server.net.packet.Packet;
@@ -56,6 +57,8 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
     if (!session.isAuthenticated()) {
       return;
     }
+
+    // TODO: This code really needs to be optimised to prevent duplicate code
 
     final Player player = session.getPlayer();
     Position oldPosition = player.getPosition();
@@ -78,7 +81,8 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
       player.moveTime = System.currentTimeMillis();
     }
 
-    if (player.watchingReplay) return;
+    if (player.watchingReplay)
+      return;
 
     if ((dx > 400 || dy > 400 || dz > 400)) // respawning
     {
@@ -99,14 +103,18 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
 
       // If player is within the zone boundaries
       if ((x / 32 >= minX && x / 32 <= maxX)
-              && (z / 32 >= minZ && z / 32 <= maxZ)
-              && (y / 32 >= minY && y / 32 <= maxY)) {
+          && (z / 32 >= minZ && z / 32 <= maxZ)
+          && (y / 32 >= minY && y / 32 <= maxY)) {
         if (player.team != -1) {
           short fogDensity = 0;
-          if (zone.density == 255) fogDensity = 1;
-          if (zone.density == 191) fogDensity = 7;
-          if (zone.density == 127) fogDensity = 14;
-          if (zone.density == 64) fogDensity = 28;
+          if (zone.density == 255)
+            fogDensity = 1;
+          if (zone.density == 191)
+            fogDensity = 7;
+          if (zone.density == 127)
+            fogDensity = 14;
+          if (zone.density == 64)
+            fogDensity = 28;
 
           player.getActionSender().sendMapProperty(4, fogDensity);
           player.getActionSender().sendMapColor(2, (short) 34, (short) 34, (short) 34);
@@ -115,11 +123,15 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
       } else {
         if (player.isInSmokeZone && player.team != -1) {
           player.getActionSender().sendMapProperty(4, World.getWorld().getLevel().viewDistance);
-          player.getActionSender().sendMapColor(2, Constants.DEFAULT_COLORS[2][0], Constants.DEFAULT_COLORS[2][1], Constants.DEFAULT_COLORS[2][2]);
+          player.getActionSender()
+              .sendMapColor(2, Constants.DEFAULT_COLORS[2][0], Constants.DEFAULT_COLORS[2][1],
+                  Constants.DEFAULT_COLORS[2][2]);
 
           short[][] colors = World.getWorld().getLevel().colors;
           if (colors[2][0] == -1) {
-            player.getActionSender().sendMapColor(2, Constants.DEFAULT_COLORS[2][0], Constants.DEFAULT_COLORS[2][1], Constants.DEFAULT_COLORS[2][2]);
+            player.getActionSender()
+                .sendMapColor(2, Constants.DEFAULT_COLORS[2][0], Constants.DEFAULT_COLORS[2][1],
+                    Constants.DEFAULT_COLORS[2][2]);
           } else {
             player.getActionSender().sendMapColor(2, colors[2][0], colors[2][1], colors[2][2]);
           }
@@ -132,24 +144,101 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
     // Kill floor
     boolean belowKillFloor = (z - 16) / 32 < World.getWorld().getLevel().floor;
     if (belowKillFloor && !player.isSafe()) {
-      player.markSafe();
-      World.getWorld().broadcast("- " + player.parseName() + " died!");
-      player.sendToTeamSpawn();
-      if (World.getWorld().getGameMode() instanceof  CTFGameMode && player.hasFlag) {
-        CTFGameMode ctf = (CTFGameMode) World.getWorld().getGameMode();
-        ctf.dropFlag(player, true, false);
+      if (player.team != -1) {
+        player.markSafe();
+        World.getWorld().broadcast("- " + player.parseName() + " died!");
+        player.sendToTeamSpawn();
+
+        if (org.opencraft.server.game.impl.GameSettings.getBoolean("Elimination")) {
+          World.getWorld().getGameMode().checkEliminationLives(player);
+        }
+
+        if (World.getWorld().getGameMode() instanceof CTFGameMode && player.hasFlag) {
+          CTFGameMode ctf = (CTFGameMode) World.getWorld().getGameMode();
+          ctf.dropFlag(player, true, false);
+        }
       }
     }
+
     boolean isOnGround = World.getWorld().getLevel().getBlock(
         blockPosition.getX(), blockPosition.getY(), blockPosition.getZ() - 2) > 0;
     if (isOnGround && !belowKillFloor) {
       player.safePosition = position;
     }
 
-    // Check if the player has entered either spawn zones with the flag
+    // Shrinking edge zones
+    boolean shouldDie = GameSettings.getBoolean("ShrinkingZonesKillEveryone") || player.hasFlag;
+    if (shouldDie) {
+      if (player.team != -1) {
+
+        if (World.getWorld().getGameMode() instanceof CTFGameMode) {
+          boolean inEdgeZone = false;
+          CTFGameMode ctf = (CTFGameMode) World.getWorld().getGameMode();
+
+          if (ctf.redFlagTaken && ctf.blueFlagTaken) {
+            // Red edge zone
+            if (ctf.redEdgeZoneMin != null && ctf.redEdgeZoneMax != null) {
+              int minX = Math.min(ctf.redEdgeZoneMin.getX(), ctf.redEdgeZoneMax.getX()) + 1;
+              int maxX = Math.max(ctf.redEdgeZoneMin.getX(), ctf.redEdgeZoneMax.getX()) - 1;
+
+              int minY = Math.min(ctf.redEdgeZoneMin.getY(), ctf.redEdgeZoneMax.getY()) - 1;
+              int maxY = Math.max(ctf.redEdgeZoneMin.getY(), ctf.redEdgeZoneMax.getY()) + 1;
+
+              int minZ = Math.min(ctf.redEdgeZoneMin.getZ(), ctf.redEdgeZoneMax.getZ());
+              int maxZ = Math.max(ctf.redEdgeZoneMin.getZ(), ctf.redEdgeZoneMax.getZ());
+
+              if ((x / 32 >= minX && x / 32 <= maxX)
+                  && (z / 32 >= minY && z / 32 <= maxY)
+                  && (y / 32 >= minZ && y / 32 <= maxZ)) {
+                inEdgeZone = true;
+              }
+            }
+
+            // Blue edge zone
+            if (ctf.blueEdgeZoneMin != null && ctf.blueEdgeZoneMax != null) {
+              int minX = Math.min(ctf.blueEdgeZoneMin.getX(), ctf.blueEdgeZoneMax.getX());
+              int maxX = Math.max(ctf.blueEdgeZoneMin.getX(), ctf.blueEdgeZoneMax.getX()) + 1;
+
+              int minY = Math.min(ctf.blueEdgeZoneMin.getY(), ctf.blueEdgeZoneMax.getY()) - 1;
+              int maxY = Math.max(ctf.blueEdgeZoneMin.getY(), ctf.blueEdgeZoneMax.getY()) + 1;
+
+              int minZ = Math.min(ctf.blueEdgeZoneMin.getZ(), ctf.blueEdgeZoneMax.getZ());
+              int maxZ = Math.max(ctf.blueEdgeZoneMin.getZ(), ctf.blueEdgeZoneMax.getZ());
+
+              if ((x / 32 >= minX && x / 32 <= maxX)
+                  && (z / 32 >= minY && z / 32 <= maxY)
+                  && (y / 32 >= minZ && y / 32 <= maxZ)) {
+                inEdgeZone = true;
+              }
+            }
+
+            // Entered zone
+            if (inEdgeZone) {
+              if (player.edgeZoneEntryTime == 0) {
+                player.edgeZoneEntryTime = System.currentTimeMillis();
+
+                player.getActionSender().sendChatMessage("&cLook out!", 101);
+                player.getActionSender()
+                    .sendChatMessage("&7Head to the middle to escape the void!", 102);
+              }
+            }
+            // Left zone
+            else {
+              if (player.edgeZoneEntryTime != 0) {
+                player.edgeZoneEntryTime = 0;
+
+                player.getActionSender().sendChatMessage("", 101);
+                player.getActionSender().sendChatMessage("", 102);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Spawn zones
     if (player.hasFlag) {
       Level level = World.getWorld().getLevel();
-
       if (player.team == 0 && level.redSpawnZoneMin != null && level.redSpawnZoneMax != null) {
         int minX = level.redSpawnZoneMin.getX() - 32;
         int minZ = level.redSpawnZoneMin.getZ();
@@ -161,11 +250,13 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
 
         // If player is within the zone boundaries
         if ((x >= minX && x <= maxX)
-                && (z >= minZ && z <= maxZ)
-                && (y >= minY && y <= maxY)) {
+            && (z >= minZ && z <= maxZ)
+            && (y >= minY && y <= maxY)) {
           player.isLegal = false;
 
-          player.getActionSender().sendTeleport(new Position(player.lastLegalPosition.getX(), player.lastLegalPosition.getY(), player.getPosition().getZ()), player.getRotation());
+          player.getActionSender().sendTeleport(
+              new Position(player.lastLegalPosition.getX(), player.lastLegalPosition.getY(),
+                  player.getPosition().getZ()), player.getRotation());
           player.getActionSender().sendChatMessage("&cGo back!", 101);
           player.getActionSender().sendChatMessage("&7You may not enter spawn with the flag.", 102);
 
@@ -175,9 +266,8 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
           player.getActionSender().sendChatMessage("", 102);
           player.isLegal = true;
         }
-      }
-
-      else if (player.team == 1 && level.blueSpawnZoneMin != null && level.blueSpawnZoneMax != null) {
+      } else if (player.team == 1 && level.blueSpawnZoneMin != null
+          && level.blueSpawnZoneMax != null) {
         int minX = level.blueSpawnZoneMin.getX() - 32;
         int minZ = level.blueSpawnZoneMin.getZ();
         int minY = level.blueSpawnZoneMin.getY() - 32;
@@ -188,11 +278,13 @@ public class MovementPacketHandler implements PacketHandler<MinecraftSession> {
 
         // If player is within the zone boundaries
         if ((x >= minX && x <= maxX)
-                && (z >= minZ && z <= maxZ)
-                && (y >= minY && y <= maxY)) {
+            && (z >= minZ && z <= maxZ)
+            && (y >= minY && y <= maxY)) {
           player.isLegal = false;
 
-          player.getActionSender().sendTeleport(new Position(player.lastLegalPosition.getX(), player.lastLegalPosition.getY(), player.getPosition().getZ()), player.getRotation());
+          player.getActionSender().sendTeleport(
+              new Position(player.lastLegalPosition.getX(), player.lastLegalPosition.getY(),
+                  player.getPosition().getZ()), player.getRotation());
           player.getActionSender().sendChatMessage("&cGo back!", 101);
           player.getActionSender().sendChatMessage("&7You may not enter spawn with the flag.", 102);
 

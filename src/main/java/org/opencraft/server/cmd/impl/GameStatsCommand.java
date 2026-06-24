@@ -1,73 +1,228 @@
-/*
- * Jacob_'s Capture the Flag for Minecraft Classic and ClassiCube
- * Copyright (c) 2010-2014 Jacob Morgan
- * Based on OpenCraft v0.2
- *
- * OpenCraft License
- *
- * Copyright (c) 2009 Graham Edgecombe, S�ren Enevoldsen and Brett Russell.
- * All rights reserved.
- *
- * Distribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *     * Distributions of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- *
- *     * Distributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *     * Neither the name of the OpenCraft nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
 package org.opencraft.server.cmd.impl;
 
 import org.opencraft.server.cmd.Command;
 import org.opencraft.server.cmd.CommandParameters;
 import org.opencraft.server.model.Player;
-import tf.jacobsc.utils.RatingKt;
-import tf.jacobsc.utils.RatingType;
 
 public class GameStatsCommand implements Command {
+
   private static final GameStatsCommand INSTANCE = new GameStatsCommand();
 
-  /**
-   * Gets the singleton instance of this command.
-   *
-   * @return The singleton instance of this command.
-   */
   public static GameStatsCommand getCommand() {
     return INSTANCE;
   }
 
+  @Override
   public void execute(Player player, CommandParameters params) {
-    //player.getActionSender().sendChatMessage("- &eDef kills: " + player.defenseKills + ", mid kills: " + player.midKills + ", atk kills: " + player.attackKills);
-    player.getActionSender().sendChatMessage("- &eTotal kills: " + player.kills + " vs Total deaths: " + player.deaths + " (" + player.kills / player.deaths + ")");
-    player.getActionSender().sendChatMessage("- &eTNT kills: " + player.tntKills + " vs TNT deaths " + player.tntDeaths + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eTag kills: " + player.tagKills + " vs Tag deaths " + player.tagDeaths + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eMine kills: " + player.mineKills + " vs Mine deaths " + player.mineDeaths + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eGrenades thrown: " + player.grenadesThrown + " -> Grenades landed " + player.grenadeKills + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eGrenade deaths: " + player.grenadeDeaths + " vs Rocket deaths: " + player.rocketDeaths + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eRockets shot: " + player.rocketsShot + " -> Rockets landed: " + player.rocketKills + " (0.33)");
-    player.getActionSender().sendChatMessage("- &eLines used: " + player.linesUsed);
-    player.getActionSender().sendChatMessage("- &ePoints earned: " + player.currentRoundPointsEarned + " -> Points spent" + player.pointsSpent + " (0.8)");
-    player.getActionSender().sendChatMessage("- &eFlags taken: " + player.flagsTaken + " -> Flags captured: " + player.captures + " (0.42)");
-    player.getActionSender().sendChatMessage("- &eHighest kill streak: " + player.highestKillStreak + " vs Highest death streak: " + player.highestDeathStreak + " (0.88)");
-    //player.getActionSender().sendChatMessage("- &eOverall performance: " + performanceRating);
-    player.getActionSender().sendChatMessage("&a* You may need to scroll up to see all stats *");
+    double kd = ratio(player.kills, player.deaths);
+    double tntKd = ratio(player.tntKills, player.tntDeaths);
+    double tagKd = ratio(player.tagKills, player.tagDeaths);
+    double mineKd = ratio(player.mineKills, player.mineDeaths);
+    double grenadeAccuracy = percentage(player.grenadeKills, player.grenadesThrown);
+    double rocketAccuracy = percentage(player.rocketKills, player.rocketsShot);
+    double captures = ratio(player.captures, player.flagsLost);
+
+    player.getActionSender().sendChatMessage(
+        "- &eTotal &akills&e: " + player.kills +
+            " vs &cdeaths&e: " + player.deaths +
+            " (&f" + format(kd) +
+            "&e, " + getRatioTier(kd) + "&e)"
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &aDef &ekills: " + player.defKills +
+            ", &bmid &ekills: " + player.midKills +
+            ", &catk &ekills: " + player.atkKills
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eTNT &akills&e: " + player.tntKills +
+            " vs &cdeaths&e: " + player.tntDeaths +
+            " (&f" + format(tntKd) +
+            "&e, " + getRatioTier(tntKd) + "&e)"
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eTag &akills&e: " + player.tagKills +
+            " vs &cdeaths&e: " + player.tagDeaths +
+            " (&f" + format(tagKd) +
+            "&e, " + getRatioTier(tagKd) + "&e)"
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eMine &akills&e: " + player.mineKills +
+            " vs &cdeaths&e: " + player.mineDeaths +
+            " (&f" + format(mineKd) +
+            "&e, " + getRatioTier(mineKd) + "&e)"
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eGrenades thrown: " + player.grenadesThrown +
+            " -> &akills&e: " + player.grenadeKills +
+            " (&f" + format(grenadeAccuracy) + "%" +
+            "&e, " + getPercentTier(grenadeAccuracy) + "&e)"
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eGrenade &cdeaths&e: " + player.grenadeDeaths +
+            " vs Rocket &cdeaths&e: " + player.rocketDeaths
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eRockets shot: " + player.rocketsShot +
+            " -> &akills&e: " + player.rocketKills +
+            " (&f" + format(rocketAccuracy) + "%" +
+            "&e, " + getPercentTier(rocketAccuracy) + "&e)"
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eLines used: " + player.linesUsed +
+            "&e, Points spent: " + player.pointsSpent +
+            " / " + player.currentRoundPointsEarned
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eFlags captured: " + player.captures +
+            " vs lost: " + player.flagsLost +
+            " (&f" + format(captures) + "%" +
+            "&e, " + getRatioTier(captures) + "&e)"
+    );
+
+    player.getActionSender().sendChatMessage(
+        "- &eHighest kill streak: " + player.highestKillStreak +
+            " vs Highest death streak: " + player.highestDeathStreak
+    );
+
+    double overallPerformance = calculateOverallPerformance(
+        kd,
+        captures
+    );
+
+    if (overallPerformance < 0) {
+      player.getActionSender().sendChatMessage(
+          "- &eOverall performance: &7N/A"
+      );
+    } else {
+      player.getActionSender().sendChatMessage(
+          "- &eOverall performance: &f" +
+              format(overallPerformance) +
+              "/100 &e(" +
+              getPerformanceTier(overallPerformance) +
+              "&e)"
+      );
+    }
+
+    player.getActionSender().sendChatMessage(
+        "&a* You may need to scroll up to see all stats *"
+    );
+  }
+
+  private static double ratio(int numerator, int denominator) {
+    if (numerator == 0 && denominator == 0) {
+      return -1.0;
+    }
+    if (denominator <= 0) {
+      return numerator;
+    }
+    return (double) numerator / denominator;
+  }
+
+  private static double percentage(int value, int total) {
+    if (value == 0 && total == 0) {
+      return -1.0;
+    }
+    if (total <= 0) {
+      return value > 0 ? 100.0 : -1.0;
+    }
+    return ((double) value / total) * 100.0;
+  }
+
+  private static String format(double value) {
+    return String.format("%.2f", value);
+  }
+
+  private static String getRatioTier(double value) {
+    if (value < 0) {
+      return "&7N/A";
+    }
+
+    if (value >= 1.5) {
+      return "&dS";
+    } else if (value >= 1.0) {
+      return "&aA";
+    } else if (value >= 0.75) {
+      return "&2B";
+    } else if (value >= 0.5) {
+      return "&eC";
+    } else if (value >= 0.25) {
+      return "&6D";
+    } else if (value >= 0.125) {
+      return "&cE";
+    } else {
+      return "&4F";
+    }
+  }
+
+  private static String getPercentTier(double percent) {
+    if (percent < 0) {
+      return "&7N/A";
+    }
+    if (percent >= 100) {
+      return "&dS";
+    } else if (percent >= 80) {
+      return "&aA";
+    } else if (percent >= 60) {
+      return "&2B";
+    } else if (percent >= 40) {
+      return "&eC";
+    } else if (percent >= 20) {
+      return "&6D";
+    } else if (percent >= 10) {
+      return "&cE";
+    } else {
+      return "&4F";
+    }
+  }
+
+  private static double calculateOverallPerformance(
+      double kd,
+      double captureRate
+  ) {
+    double total = 0.0;
+    double weightSum = 0.0;
+
+    if (kd >= 0) {
+      total += (Math.min(kd, 2.0) / 2.0 * 100.0) * 0.40;
+      weightSum += 0.40;
+    }
+
+    if (captureRate >= 0) {
+      total += Math.min(captureRate, 100.0) * 0.10;
+      weightSum += 0.50;
+    }
+
+    if (weightSum == 0) {
+      return -1.0;
+    }
+
+    return total / weightSum;
+  }
+
+  private static String getPerformanceTier(double score) {
+    if (score >= 90) {
+      return "&dS";
+    } else if (score >= 80) {
+      return "&aA";
+    } else if (score >= 60) {
+      return "&2B";
+    } else if (score >= 40) {
+      return "&eC";
+    } else if (score >= 20) {
+      return "&6D";
+    } else if (score >= 10) {
+      return "&cE";
+    } else {
+      return "&4F";
+    }
   }
 }

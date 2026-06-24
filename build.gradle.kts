@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version libs.versions.kotlin.get()
 }
 
-val jvmVersion = 21
+val jvmVersion = 23
 
 java {
     toolchain {

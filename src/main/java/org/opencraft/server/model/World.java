@@ -388,7 +388,7 @@ public final class World {
 
     if (level.redSpawnZoneMin != null && level.redSpawnZoneMax != null) {
       session.getActionSender().sendSelectionCuboid(
-              0,
+              127,
               "RedSpawnZone",
               (short) (level.redSpawnZoneMin.getX() / 32),
               (short) ((level.redSpawnZoneMin.getZ() / 32) - 1),
@@ -405,7 +405,7 @@ public final class World {
 
     if (level.blueSpawnZoneMin != null && level.blueSpawnZoneMax != null) {
       session.getActionSender().sendSelectionCuboid(
-              1,
+              126,
               "BlueSpawnZone",
               (short) (level.blueSpawnZoneMin.getX() / 32),
               (short) ((level.blueSpawnZoneMin.getZ() / 32) - 1),

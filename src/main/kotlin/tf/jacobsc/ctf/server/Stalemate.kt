@@ -11,6 +11,10 @@ fun staleMateThread(world: World, seconds: Int) =
             if (player.hasFlag) {
                 gameMode.dropFlag(player, true, false)
             }
+
+            // Remove elimination zones if they exist
+            player.getActionSender().sendRemoveSelectionCuboid(125)
+            player.getActionSender().sendRemoveSelectionCuboid(124)
         }
         gameMode.returnDroppedRedFlag()
         gameMode.returnDroppedBlueFlag()

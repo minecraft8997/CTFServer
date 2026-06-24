@@ -56,20 +56,21 @@ public class HelpCommand implements Command {
   public void execute(Player player, CommandParameters params) {
     if (params.getArgumentCount() == 0) {
       player.getActionSender().sendChatMessage("&7-");
-      player.getActionSender().sendChatMessage("&eType &b/help game &eto learn how to play.");
-      player.getActionSender().sendChatMessage("&eType &b/help tnt &eto learn about &cTNT&e.");
+      player.getActionSender().sendChatMessage("&eType &b/commands &efor a list of commands.");
+      player.getActionSender().sendChatMessage("&eType &b/help rating &eto learn how rating works.");
+      player.getActionSender().sendChatMessage("&eType &b/help stalemate &eto learn about anti-stalemate.");
       player.getActionSender().sendChatMessage("&eType &b/help mines &eto learn about &8mines&e.");
       player.getActionSender().sendChatMessage("&eType &b/help tagging &eto learn how tagging works.");
-      player.getActionSender().sendChatMessage("&eType &b/help points &eto learn how to earn and spend points.");
-      player.getActionSender().sendChatMessage("&eType &b/help stalemate &eto learn how anti-stalemate mode works.");
-      player.getActionSender().sendChatMessage("&eType &b/help rating &eto learn how rating works.");
-      player.getActionSender().sendChatMessage("&eType &b/commands &efor a list of commands.");
+      player.getActionSender().sendChatMessage("&eType &b/help points &eto learn about points and store.");
+      player.getActionSender().sendChatMessage("&eType &b/help tnt &eto learn about &cTNT&e.");
+      player.getActionSender().sendChatMessage("&eType &b/help game &eto learn how to play.");
+      player.getActionSender().sendChatMessage("&6Type &b/join &6to join a team and start playing!");
       player.getActionSender().sendChatMessage("&7-");
       player.getActionSender().sendChatMessage("&a* You may need to scroll up to see the full message *");
     } else if (params.getStringArgument(0).equals("game")) {
       player.getActionSender().sendChatMessage("&7- &eThe aim of the game is to get the most flags by the end of the round. Rounds typically last for &b20 minutes &eor until a team reaches &b5 captures &efirst. In the event of a draw, the next capture wins. Click on the other team's flag to pick it up; capture it by clicking on your own flag. The team with the most captures by the end of the round wins!");
     } else if (params.getStringArgument(0).equals("tnt")) {
-      player.getActionSender().sendChatMessage("&7- &eThe most common way to kill other players is with &cTNT&e. Place a &cTNT &eand then a &5detonator &eblock to explode it. If a player is within a &b2-block &eradius of the &cTNT&e, it will kill them. You may only have &b1 &cTNT &eactive at a time.");
+      player.getActionSender().sendChatMessage("&7- &ePlace a &cTNT &eto kill players nearby. If a player is within a &b2-block &eradius of the &cTNT&e, it will kill them. You may only have &b1 &cTNT &eactive at a time. You can use /tnt to switch between auto and manual TNT. Manual TNT requires placing a &5detonator &eblock to explode and can be faster than auto TNT.");
     } else if (params.getStringArgument(0).equals("mines")) {
       player.getActionSender().sendChatMessage("&7- &8Mines &eare blocks that explode when players get within a &b2.5-block &eradius of them. You may only have &b2 &8mines &eactive at a time. Type &b/d &eto defuse your own &8mines&e. You can defuse enemy &8mines &eby exploding them. You will not die if you get close to &8mines &eplaced by you or your teammates.");
     } else if (params.getStringArgument(0).equals("tagging")) {
@@ -77,7 +78,7 @@ public class HelpCommand implements Command {
     } else if (params.getStringArgument(0).equals("points")) {
       player.getActionSender().sendChatMessage("&7- &eAll players start with &b40 &epoints. &cTNT &ekills give &b5 &epoints, the first kill of the game &egives &b50 &epoints, &btagging &egives &b15 &epoints and &bflag captures &egive &b40 &epoints. You can also find points in &6crates&e. &eYou may use your points in the &b/store&e. &ePoints reset at the end of every round.");
     } else if (params.getStringArgument(0).equals("stalemate")) {
-      player.getActionSender().sendChatMessage("&7- &eWhen both teams have an even amount of flag captures or both teams are currently holding the flag, the game goes into &banti-stalemate mode&e. This means that the first flag carrier to die will have their flag respawn immediately. If a player from your team is tagged, your flag carrier will automatically drop the flag.");
+      player.getActionSender().sendChatMessage("&7- &eWhen both teams have an even amount of flag captures or both teams are currently holding the flag, the game goes into &banti-stalemate mode&e. This means that the first flag carrier to die will have their flag respawn immediately. If a player from your team is tagged in sudden death, your flag carrier will automatically drop the flag.");
     } else if (params.getStringArgument(0).equals("rating")) {
       player.getActionSender().sendChatMessage("&7- &eEach player is assigned a &bTeam Rating (TR)&e, and a &bDuel Rating (DR)&e. Ratings are calculated using &bTrueSkill&e. You may earn or lose TR depending on how &eyour team performs in tournament games and who is on the &eenemy team. Similarly, you &emay earn or lose DR &edepending on how you perform in duels and who you go &eagainst. For &emore info on how &bTrueSkill &eworks, see &bhttps://en.wikipedia.org/wiki/TrueSkill");
     }

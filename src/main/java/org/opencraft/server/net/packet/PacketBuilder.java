@@ -185,4 +185,10 @@ public final class PacketBuilder {
     values.put(name, value);
     return this;
   }
+
+  public PacketBuilder putBoolean(String name, boolean value) {
+    validateField(name, DataType.BYTE);
+    values.put(name, (byte) (value ? 1 : 0));
+    return this;
+  }
 }

@@ -39,6 +39,7 @@ public class GameSettings {
     add("AntiStalemate", TYPE_BOOLEAN, true);
     add("AntiStalemateTime", TYPE_INT, 90);
     add("StalemateTags", TYPE_BOOLEAN, false);
+    add("FlagCarrierKillReward", TYPE_INT, 10);
     add("InitialPoints", TYPE_INT, Constants.INITIAL_PLAYER_POINTS);
     add("Whitelist", TYPE_BOOLEAN, false);
     add("WhitelistMessage", TYPE_STRING, "There is a tournament going on, try again later!");
@@ -64,6 +65,14 @@ public class GameSettings {
     add("VineDecayTime", TYPE_INT, 30000);
     add("TNTTime", TYPE_FLOAT, 1.0f);
     add("QuoteCooldown", TYPE_INT, 10);
+    add("Elimination", TYPE_BOOLEAN, false);
+    add("EliminationLives", TYPE_INT, 1);
+    add("EliminationEndIfZeroEnemies", TYPE_BOOLEAN, true);
+    add("ShrinkingZones", TYPE_BOOLEAN, false);
+    add("ShrinkingZonesUpdateTime", TYPE_INT, 2000);
+    add("ShrinkingZonesDeathTime", TYPE_INT, 3000);
+    add("ShrinkingZonesKillEveryone", TYPE_BOOLEAN, false);
+    add("CanGrabWithZeroEnemies", TYPE_BOOLEAN, false);
   }
 
   public static Object get(String k) {

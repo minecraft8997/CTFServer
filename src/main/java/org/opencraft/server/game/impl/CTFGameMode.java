@@ -50,6 +50,8 @@ import org.opencraft.server.model.*;
 import org.opencraft.server.model.BlockLog.BlockInfo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.opencraft.server.replay.ReplayManager;
 import org.opencraft.server.task.TaskQueue;
@@ -78,6 +80,12 @@ public class CTFGameMode extends GameMode {
   public boolean blueFlagTaken = false;
   public Player redFlagTakenBy;
   public Player blueFlagTakenBy;
+
+  // Zones for shrinking borders
+  public Position redEdgeZoneMin;
+  public Position redEdgeZoneMax;
+  public Position blueEdgeZoneMin;
+  public Position blueEdgeZoneMax;
 
   private boolean stalemateTags;
   private boolean suddenDeath;
@@ -198,7 +206,6 @@ public class CTFGameMode extends GameMode {
           killed.add(t);
           p.gotKill(t);
           t.sendToTeamSpawn();
-          t.died(p);
 
           if (type == "rocket") {
             float dx = x - p.rocketStartPosition.getX();
@@ -209,7 +216,7 @@ public class CTFGameMode extends GameMode {
             updateKillFeed(p, t, p.parseName() + " rocketed " + t.getColoredName() + " &f(" + distance + ")");
             p.rocketKills++;
             t.rocketDeaths++;
-          } if (type == "grenade") {
+          } else if (type == "grenade") {
             updateKillFeed(p, t, p.parseName() + " grenaded " + t.getColoredName());
             p.grenadeKills++;
             t.grenadeDeaths++;
@@ -227,6 +234,9 @@ public class CTFGameMode extends GameMode {
             p.addPoints(5);
           }
           if (t.hasFlag) {
+            if (redFlagTaken && blueFlagTaken) {
+              p.addPoints(GameSettings.getInt("FlagCarrierKillReward"));
+            }
             dropFlag(t.team);
 
             // Follow the player who killed flag carriers in auto mode, if they are still alive
@@ -243,6 +253,8 @@ public class CTFGameMode extends GameMode {
               }
             }
           }
+
+          t.died(p);
         }
       }
     }
@@ -620,6 +632,17 @@ public class CTFGameMode extends GameMode {
                 winner = "blue";
                 winnerID = 1;
               }
+
+              if (GameSettings.getBoolean("Elimination")) {
+                if (redPlayers == 0) {
+                  winner = "blue";
+                  winnerID = 1;
+                } else if (bluePlayers == 0) {
+                  winner = "red";
+                  winnerID = 0;
+                }
+              }
+
               if (winner == null) {
                 World.getWorld().broadcast("- &6The game ended in a tie!");
               } else {
@@ -786,6 +809,12 @@ public class CTFGameMode extends GameMode {
       player.hasFlag = false;
       unblockSpawnZones(player);
       World.getWorld().broadcast("- " + player.parseName() + " dropped the flag!");
+
+      // Remove shrinking zones if present
+      for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+        p.getActionSender().sendRemoveSelectionCuboid(125);
+        p.getActionSender().sendRemoveSelectionCuboid(124);
+      }
     }
     player.disableFlameThrower();
   }
@@ -805,7 +834,61 @@ public class CTFGameMode extends GameMode {
         World.getWorld().broadcast("- &eIf your teammate gets tagged you'll drop the flag");
         stalemateTags = true;
       }
+
+      if (GameSettings.getBoolean("ShrinkingZones")){
+        createShrinkingBorders();
+      }
     }
+  }
+
+  public void createShrinkingBorders() {
+    Level level = World.getWorld().getLevel();
+    int width = level.getWidth();
+    int length = level.getHeight();
+
+    World.getWorld().broadcast("- &eThe borders are shrinking! If you have the flag, keep out!");
+
+    new Thread(() -> {
+      int i = 0;
+      boolean finished = false;
+      while (redFlagTaken && blueFlagTaken && !finished) {
+        // Stop when borders are 5 blocks from the middle
+        if (i >= (width / 2) - 5) {
+          World.getWorld().broadcast("- &eThe borders have stopped shrinking!");
+          finished = true;
+          break;
+        }
+
+        redEdgeZoneMin = new Position(0, 0, 0);
+        redEdgeZoneMax = new Position(i, 1024, length);
+        blueEdgeZoneMin = new Position(width, 0, 0);
+        blueEdgeZoneMax = new Position(width - i, 1024, length);
+
+        for (Player player : World.getWorld().getPlayerList().getPlayers()) {
+          // Remove existing zones if they exist
+          player.getActionSender().sendRemoveSelectionCuboid(125);
+          player.getActionSender().sendRemoveSelectionCuboid(124);
+
+          // Create new ones
+          player.getActionSender().sendSelectionCuboid(
+              125, "RedEdgeBorderZone", (short)0, (short)0, (short)0, (short)i, (short)1024, (short)length, (short)124, (short)31, (short)206, (short)64
+          );
+
+          player.getActionSender().sendSelectionCuboid(
+              124, "BlueEdgeBorderZone", (short)width, (short)0, (short)0, (short)(width - i), (short)1024, (short)length, (short)124, (short)31, (short)206, (short)64
+          );
+        }
+
+        i += 1;
+
+        try {
+          Thread.sleep(GameSettings.getInt("ShrinkingZonesUpdateTime"));
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break;
+        }
+      }
+    }).start();
   }
 
   public void blockSpawnZones(Player p) {
@@ -940,6 +1023,12 @@ public class CTFGameMode extends GameMode {
       World.getWorld().broadcast("- &eThe blue flag has been returned!");
       blueFlagTakenBy = null;
     }
+
+    // Remove shrinking zones if present
+    for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+      p.getActionSender().sendRemoveSelectionCuboid(125);
+      p.getActionSender().sendRemoveSelectionCuboid(124);
+    }
   }
 
   public void returnDroppedRedFlag() {
@@ -950,10 +1039,19 @@ public class CTFGameMode extends GameMode {
       World.getWorld().broadcast("- &eThe red flag has been returned!");
       redFlagTakenBy = null;
     }
+
+    // Remove shrinking zones if present
+    for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+      p.getActionSender().sendRemoveSelectionCuboid(125);
+      p.getActionSender().sendRemoveSelectionCuboid(124);
+    }
   }
 
   public void dropFlag(Player p, final boolean instant, final boolean isVoluntary) {
     if (p.hasFlag) {
+      if (!isVoluntary) {
+        p.flagsLost++;
+      }
       p.hasFlag = false;
       unblockSpawnZones(p);
       World.getWorld().broadcast("- " + p.parseName() + " dropped the flag!");
@@ -1053,7 +1151,7 @@ public class CTFGameMode extends GameMode {
       if (p.team == 1) {
         if (!redFlagTaken) {
           // red flag taken
-          if (getRedPlayers() == 0 || getBluePlayers() == 0) {
+          if ((getRedPlayers() == 0 || getBluePlayers() == 0) && !GameSettings.getBoolean("CanGrabWithZeroEnemies")) {
             placeRedFlag();
             p.getActionSender()
                 .sendChatMessage("- &eFlag cannot be captured when one team has 0 " + "people");
@@ -1126,7 +1224,7 @@ public class CTFGameMode extends GameMode {
       if (p.team == 0) {
         if (!blueFlagTaken) {
           // blue flag taken
-          if (getRedPlayers() == 0 || getBluePlayers() == 0) {
+          if ((getRedPlayers() == 0 || getBluePlayers() == 0) && !GameSettings.getBoolean("CanGrabWithZeroEnemies")) {
             placeBlueFlag();
             p.getActionSender()
                 .sendChatMessage("- &eFlag cannot be captured when one team has 0 " + "people");
@@ -1203,6 +1301,30 @@ public class CTFGameMode extends GameMode {
     int z = pos.getZ();
 
     if (p.team != -1) {
+      if (GameSettings.getBoolean("ShrinkingZones")) {
+        if (redFlagTaken && blueFlagTaken) {
+          boolean shouldDie = GameSettings.getBoolean("ShrinkingZonesKillEveryone") || p.hasFlag;
+
+          if (shouldDie) {
+            if (p.edgeZoneEntryTime != 0
+                && System.currentTimeMillis() - p.edgeZoneEntryTime
+                > GameSettings.getInt("ShrinkingZonesDeathTime")) {
+
+              p.markSafe();
+              World.getWorld().broadcast("- " + p.parseName() + " was killed by the void!");
+              p.sendToTeamSpawn();
+
+              if (org.opencraft.server.game.impl.GameSettings.getBoolean("Elimination")) {
+                World.getWorld().getGameMode().checkEliminationLives(p);
+              }
+
+              dropFlag(p, true, false);
+              p.edgeZoneEntryTime = 0;
+            }
+          }
+        }
+      }
+
       for (Mine m : World.getWorld().getAllMines()) {
         int mx = (m.x - 16) / 32;
         int my = (m.y - 16) / 32;
@@ -1319,6 +1441,10 @@ public class CTFGameMode extends GameMode {
           dropFlag(tagged.team);
         }
         if (tagged.hasFlag) {
+          if (redFlagTaken && blueFlagTaken) {
+            tagger.addPoints(GameSettings.getInt("FlagCarrierKillReward"));
+          }
+
           dropFlag(tagged.team);
         }
         tagged.died(tagger);
@@ -1713,6 +1839,9 @@ public class CTFGameMode extends GameMode {
       }
       p.addPoints(5);
       if (t.hasFlag) {
+        if (redFlagTaken && blueFlagTaken) {
+          p.addPoints(GameSettings.getInt("FlagCarrierKillReward"));
+        }
         dropFlag(t.team);
       }
     }

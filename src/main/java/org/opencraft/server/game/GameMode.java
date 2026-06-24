@@ -96,6 +96,7 @@ public abstract class GameMode {
   public String previousMap = null;
   public Level map;
   private ArrayList<DropItem> items = new ArrayList<>(8);
+  public final Map<Player, Integer> eliminationLives = new HashMap<>();
 
   public GameMode() {
     registerCommand("accept", DuelAcceptCommand.getCommand());
@@ -133,6 +134,7 @@ public abstract class GameMode {
     registerCommand("lava", LavaCommand.getCommand());
     registerCommand("lb", LeaderBoardCommand.getCommand());
     registerCommand("lbstats", LeaderboardStatsCommand.getCommand());
+    registerCommand("line", LineCommand.getCommand());
     registerCommand("log", LogCommand.getCommand());
     registerCommand("mapenvironment", MapEnvironmentCommand.getCommand());
     registerCommand("maps", MapListCommand.getCommand());
@@ -170,6 +172,7 @@ public abstract class GameMode {
     registerCommand("setspawnzone", SetSpawnZoneCommand.getCommand());
     registerCommand("solid", SolidCommand.getCommand());
     registerCommand("spec", SpecCommand.getCommand());
+    registerCommand("stalemate", StalemateCommand.getCommand());
     registerCommand("start", StartCommand.INSTANCE);
     registerCommand("stats", GameStatsCommand.getCommand());
     registerCommand("status", StatusCommand.getCommand());
@@ -365,6 +368,9 @@ public abstract class GameMode {
     player.currentRoundPointsEarned = 0;
     player.setPoints(GameSettings.getInt("InitialPoints"));
     player.kills = 0;
+    player.defKills = 0;
+    player.midKills = 0;
+    player.atkKills = 0;
     player.highestKillStreak = 0;
     player.mineKills = 0;
     player.tntKills = 0;
@@ -381,6 +387,7 @@ public abstract class GameMode {
     player.rocketDeaths = 0;
     player.rocketsShot = 0;
     player.flagsTaken = 0;
+    player.flagsLost = 0;
     player.linesUsed = 0;
     player.pointsSpent = 0;
     player.captures = 0;
@@ -432,6 +439,7 @@ public abstract class GameMode {
               rtvYesPlayers.clear();
               rtvNoPlayers.clear();
               nominatedMaps.clear();
+              eliminationLives.clear();
               isFirstBlood = true;
               for (Player p : World.getWorld().getPlayerList().getPlayers()) {
                 p.joinTeam("spec", false);
@@ -747,6 +755,31 @@ public abstract class GameMode {
 
   public void playerRespawn(Player p) {
 
+  }
+
+  public void checkEliminationLives(Player player) {
+    if (!eliminationLives.containsKey(player)) {
+      return;
+    }
+
+    int lives = eliminationLives.get(player) - 1;
+    eliminationLives.put(player, lives);
+
+    if (lives <= 0) {
+      eliminatePlayer(player);
+    } else {
+      player.getActionSender().sendChatMessage("&f- &eYou have " + lives + " lives remaining.");
+    }
+  }
+
+  private void eliminatePlayer(Player player) {
+    player.getActionSender().sendChatMessage("&cYou have been eliminated.");
+    player.joinTeam("spec");
+    World.getWorld().broadcast("&f- &ePlayer " + player.parseName() + " has been eliminated!");
+
+    if ((redPlayers == 0 || bluePlayers == 0) && GameSettings.getBoolean("EliminationEndIfZeroEnemies")) {
+      endGame();
+    }
   }
 
   protected boolean isSuddenDeath() {

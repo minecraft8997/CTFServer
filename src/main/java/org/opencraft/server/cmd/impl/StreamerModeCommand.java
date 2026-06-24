@@ -63,13 +63,13 @@ public class StreamerModeCommand implements Command {
       player.getActionSender().sendChatMessage("- &eStreamer mode enabled.");
 
       if (player.getSession().isExtensionSupported("CinematicGui")) {
-        player.getSession().getActionSender().sendCinematicGui(0, 0, 0, 0, 0, 0, 0, 0);
+        player.getSession().getActionSender().sendCinematicGui(true, true, true, 0, 0, 0, 0, 0);
       }
     } else {
       player.getActionSender().sendChatMessage("- &eStreamer mode disabled.");
 
       if (player.getSession().isExtensionSupported("CinematicGui")) {
-        player.getSession().getActionSender().sendCinematicGui(1, 1, 1, 0, 0, 0, 0, 0);
+        player.getSession().getActionSender().sendCinematicGui(false, false, false, 0, 0, 0, 0, 0);
       }
     }
   }

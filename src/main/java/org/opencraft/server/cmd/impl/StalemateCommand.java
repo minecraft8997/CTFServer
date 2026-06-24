@@ -36,24 +36,63 @@
  */
 package org.opencraft.server.cmd.impl;
 
-import org.opencraft.server.Constants;
 import org.opencraft.server.cmd.Command;
 import org.opencraft.server.cmd.CommandParameters;
+import org.opencraft.server.game.impl.CTFGameMode;
+import org.opencraft.server.game.impl.GameSettings;
 import org.opencraft.server.model.Player;
+import org.opencraft.server.model.World;
 
-public class FuelCommand implements Command {
-  private static final FuelCommand INSTANCE = new FuelCommand();
+public class StalemateCommand implements Command {
+
+  /** The instance of this command. */
+  private static final StalemateCommand INSTANCE = new StalemateCommand();
 
   /**
    * Gets the singleton instance of this command.
    *
    * @return The singleton instance of this command.
    */
-  public static FuelCommand getCommand() {
+  public static StalemateCommand getCommand() {
     return INSTANCE;
   }
 
-  public void execute(final Player player, CommandParameters params) {
-    player.flamethrowerFuel = Constants.FLAME_THROWER_FUEL; // Refill the flamethrower
+  @Override
+  public void execute(Player player, CommandParameters params) {
+    // Player using command is OP?
+    if (player.isOp()) {
+      if (!(World.getWorld().getGameMode() instanceof CTFGameMode)) {
+        player.getActionSender().sendChatMessage("This command is only usable in CTF.");
+        return;
+      }
+
+      if (params.getArgumentCount() == 0) {
+        player.getActionSender().sendChatMessage("/stalemate true/false");
+        return;
+      }
+
+      CTFGameMode ctf = (CTFGameMode) World.getWorld().getGameMode();
+
+      if (params.getStringArgument(0).equals("true")) {
+        ctf.redFlagTaken = true;
+        ctf.blueFlagTaken = true;
+
+        if (GameSettings.getBoolean("ShrinkingZones")){
+          ctf.createShrinkingBorders();
+        }
+
+      } else if (params.getStringArgument(0).equals("false")) {
+        ctf.redFlagTaken = false;
+        ctf.blueFlagTaken = false;
+
+        // Remove existing edge zones if they exist
+        for (Player p : World.getWorld().getPlayerList().getPlayers()) {
+          p.getActionSender().sendRemoveSelectionCuboid(125);
+          p.getActionSender().sendRemoveSelectionCuboid(124);
+        }
+      }
+    } else {
+      player.getActionSender().sendChatMessage("You must be OP to do that!");
+    }
   }
 }
