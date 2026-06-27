@@ -885,7 +885,11 @@ public class Player extends Entity implements IPlayer {
       if (!canSee(p)) {
         getActionSender().sendRemoveEntity(p);
       } else {
-        getActionSender().sendExtSpawn(p);
+        if (p.getSession().isExtensionSupported("ExtPlayerList", 2)) {
+          p.getActionSender().sendExtSpawn(p);
+        } else {
+          p.getActionSender().sendSpawn(p);
+        }
       }
     }
 
